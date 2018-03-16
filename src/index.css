@@ -1,0 +1,49 @@
+html, body,#root {
+    height:100%;
+    margin:0;
+}
+
+#root{
+  display:flex;
+  flex-direction: row;
+  align-content: stretch;
+}
+
+.app {
+  flex:1;
+  position:relative;
+}
+
+.fullScreenFlex {
+    position:absolute;
+    width:100%;
+    height:100%;
+}
+
+.scrollable {
+     overflow-y:auto;
+   	-webkit-overflow-scrolling:touch;
+}
+
+.showFloor {
+  display: block;
+}
+
+.hideFloor {
+  display: none;
+}
+.controlGroup{
+  /*transition: transform 0.01s;*/
+}
+
+#interactiveSvg  [class*=landmarks-]{
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+.searchField{
+  width: 70%;
+  padding: 2% 5%;
+  margin: 0 0 0 5%;
+  font-size: 26px;
+}
