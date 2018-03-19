@@ -33,7 +33,7 @@ html, body,#root {
   display: none;
 }
 .controlGroup{
-  /*transition: transform 0.01s;*/
+
 }
 
 #interactiveSvg  [class*=landmarks-]{
@@ -42,8 +42,10 @@ html, body,#root {
 }
 
 .searchField{
-  width: 70%;
-  padding: 2% 5%;
-  margin: 0 0 0 5%;
+  padding: 0;
+  margin: 5%;
+  border: none;
+  border-bottom: 2px solid #999;
+  width: 90%;
   font-size: 26px;
 }

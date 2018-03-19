@@ -3,6 +3,8 @@ import {connect} from "react-redux";
 
 import List from 'material-ui/List';
 import LocationsCategory from './LocationsCategory';
+import Divider from 'material-ui/Divider';
+import { withStyles } from 'material-ui/styles';
 const mapDispatchToProps = (dispatch) => {
   return {}
 }
@@ -38,6 +40,12 @@ const getCategories = (locations) =>{
   return categories;
 }
 
+const styles = theme => ({
+  nested: {
+    paddingLeft: theme.spacing.unit * 4,
+  }
+});
+
 class LocationsList extends Component {
   constructor(props) {
     super(props);
@@ -55,13 +63,28 @@ class LocationsList extends Component {
   componentDidMount() {}
 
   render() {
-    return (<List>
-      {Object.keys(this.state.categories).map((catKey) =>{
+    const { classes } = this.props;
+    let categories = this.state.categories;
+    let locations = this.props.locations;
+    return (
+      <List>
+      {Object.keys(categories).map((key) =>{
         // console.log(orderedCategories[catKey]);
-        return <LocationsCategory key={catKey} data={this.state.categories[catKey]} locations={this.props.locations.filter(location => (catKey===(location.category.term_order+'.'+location.category.slug)))} />
+        return <LocationsCategory key={key} data={categories[key]} locations={locations.filter(location => (key===(location.category.term_order+'.'+location.category.slug)))}>
+        {(categories[key].hasOwnProperty('subcat'))
+          ? Object.keys(categories[key].subcat).map((subkey) => {return <LocationsCategory key={subkey} data={categories[key].subcat[subkey]} locations={locations.filter( location => (subkey===(location.category.term_order+'.'+location.category.slug)))} />})
+            // Object.keys(this.state.categories[catKey].subcat).map( (subcatKey) => {
+            //   return {subcatKey}
+            // })
+
+          :null
+        }
+        <Divider />
+        </LocationsCategory>
       })}
-    </List>)
+    </List>
+  )
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(LocationsList);
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(LocationsList));

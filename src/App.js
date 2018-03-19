@@ -1,19 +1,17 @@
-import React, {Component, Fragment} from 'react';
+import React, {Component} from 'react';
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 import Grid from 'material-ui/Grid';
-import {CircularProgress} from 'material-ui/Progress';
-import {LinearProgress} from 'material-ui/Progress';
-import TextField from 'material-ui/TextField';
-import List, {ListItem, ListItemText, ListItemIcon} from 'material-ui/List';
-import ListSubheader from 'material-ui/List/ListSubheader';
+// import {CircularProgress} from 'material-ui/Progress';
+// import {LinearProgress} from 'material-ui/Progress';
+// import TextField from 'material-ui/TextField';
+// import List, {ListItem, ListItemText, ListItemIcon} from 'material-ui/List';
 import {setFetchFlag, saveItems} from './actions/fetch';
 
-import KeyboardedInput from 'react-touch-screen-keyboard';
-import 'react-touch-screen-keyboard/lib/Keyboard.css';
+// import LocationsList from './LocationsList';
+// import InteractiveSvg from './InteractiveSvg';
+import Sidebar from './Sidebar';
 
-import LocationsList from './LocationsList';
-import InteractiveSvg from './InteractiveSvg';
 import * as constants from './constants';
 import FuzzySearch from 'fuzzy-search';
 
@@ -35,7 +33,7 @@ const mapDispatchToProps = (dispatch) => {
 
 class App extends Component {
   constructor(props) {
-    console.log(window.location.hash.substr(1));
+    // console.log(window.location.hash.substr(1));
     super(props);
     this.state = {
       searchField: '',
@@ -81,11 +79,13 @@ class App extends Component {
   }
 
   render() {
-    let searchField = this.state.searchField;
+    // let searchField = this.state.searchField;
     return (<div className="app">
+
       <Grid className='fullScreenFlex' container spacing={0}>
         <Grid item xs={6} md={2} className="scrollable">
-          <p></p>
+          <Sidebar />
+          {/* <p></p>
           <KeyboardedInput enabled name='name' inputClassName='searchField' value={searchField} isDraggable={false} defaultKeyboard="us" secondaryKeyboard="ru" placeholder={'Поиск'} isFirstLetterUppercase={false} onChange={this.handleSearchField}/> {
             (this.state.searchField !== '')
               ? <Fragment>
@@ -107,13 +107,13 @@ class App extends Component {
             (this.props.locations.length > 0)
               ? <LocationsList/>
               : <LinearProgress color="secondary"/>
-          }
+          } */}
         </Grid>
         <Grid item xs={6} md={10}>
           {
-            (this.props.map.length > 0)
-              ? <InteractiveSvg data={this.props.map}/>
-              : <CircularProgress/>
+            // (this.props.map.length > 0)
+              // ? <InteractiveSvg data={this.props.map}/>
+              // : <CircularProgress/>
           }
         </Grid>
       </Grid>

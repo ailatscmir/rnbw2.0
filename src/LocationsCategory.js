@@ -4,7 +4,7 @@ import ExpandLess from 'material-ui-icons/ExpandLess';
 import ExpandMore from 'material-ui-icons/ExpandMore';
 import Collapse from 'material-ui/transitions/Collapse';
 import CheckCircle from 'material-ui-icons/CheckCircle';
-
+import Divider from 'material-ui/Divider';
 import { bindActionCreators } from 'redux'
 import {connect} from "react-redux";
 
@@ -50,8 +50,9 @@ class LocationsCategory extends Component {
           <ListItemText primary={this.props.data.name} />
           {(this.state.open)?<ExpandLess />:<ExpandMore />}
         </ListItem>
-        <Collapse in={this.state.open} timeout={300} unmountOnExit>
 
+        <Collapse in={this.state.open} unmountOnExit>
+          {this.props.children}
           <List component="div" disablePadding>
                {this.props.locations.map((location) => {
 
@@ -61,12 +62,12 @@ class LocationsCategory extends Component {
                        <CheckCircle />
                         </ListItemIcon>
                      :null}
-                   <ListItemText inset primary={location.title} />
+                   <ListItemText primary={location.title} />
                  </ListItem>
                })}
           </List>
         </Collapse>
-
+        <Divider/>
       </Fragment>
     );
   }
