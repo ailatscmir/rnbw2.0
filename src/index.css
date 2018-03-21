@@ -10,6 +10,7 @@ html, body,#root {
 }
 
 .app {
+  width: 100%;
   flex:1;
   position:relative;
 }
@@ -42,10 +43,30 @@ html, body,#root {
 }
 
 .searchField{
-  padding: 0;
+  padding: 4%;
   margin: 5%;
   border: none;
-  border-bottom: 2px solid #999;
-  width: 90%;
+  border: 3px solid #999;
+  width: 79%;
   font-size: 26px;
+}
+
+.fullwindow{
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  z-index: 0;
+}
+
+.panel{
+  overflow-y: scroll;
+
+  position: absolute;
+  height: 70%;
+  top:10%;
+  left:5%;
+  width: 400px;
+  /* background: #ac22f1; */
 }

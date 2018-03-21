@@ -1,50 +1,71 @@
 import React, {Component} from 'react';
+import classNames from 'classnames';
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
-import Grid from 'material-ui/Grid';
-// import {CircularProgress} from 'material-ui/Progress';
-// import {LinearProgress} from 'material-ui/Progress';
-// import TextField from 'material-ui/TextField';
-// import List, {ListItem, ListItemText, ListItemIcon} from 'material-ui/List';
-import {setFetchFlag, saveItems} from './actions/fetch';
 
-// import LocationsList from './LocationsList';
-// import InteractiveSvg from './InteractiveSvg';
-import Sidebar from './Sidebar';
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Button,
+  Grid,
+  CircularProgress,
+  Paper
+} from 'material-ui/';
+
+import ListIcon from 'material-ui-icons/List';
+
+import {withStyles} from 'material-ui/styles';
 
 import * as constants from './constants';
-import FuzzySearch from 'fuzzy-search';
+import {setFetchFlag, saveItems} from './actions/fetch';
 
-const selectLocation = (location) => {
-  return {type: 'SELECT_LOCATION', payload: location}
-}
+import InteractiveSvg from './InteractiveSvg';
+import Sidebar from './Sidebar';
 
-const mapStateToProps = (state) => {
-  return {map: state.map, locations: state.locations, currentFloor: state.currentFloor}
-}
+import KeyboardedInput  from './KeyboardedInput';
 
-const mapDispatchToProps = (dispatch) => {
+
+
+
+const mapStateToProps = state => {
   return {
-    selectLocation: bindActionCreators(selectLocation, dispatch),
+    locations:state.locations,map:state.map
+  }
+};
+const mapDispatchToProps = dispatch => {
+  return {
     setFetchFlag: bindActionCreators(setFetchFlag, dispatch),
     saveItems: bindActionCreators(saveItems, dispatch)
   }
-}
+};
+
+const styles = theme => ({
+  customBar:{
+    maxWidth: '80%',
+    left: '0',
+    right: '0',
+    margin: '2% auto 0'
+  },
+  root: {
+    flexGrow: 1
+
+  },
+  flex: {
+    flex: 0.5,
+  },
+  menuButton: {
+    marginLeft: -12,
+    marginRight: 28,
+    borderRight: '1px solid #777'
+  },
+  search: {
+    flexGrow: 1
+  }
+});
 
 class App extends Component {
-  constructor(props) {
-    // console.log(window.location.hash.substr(1));
-    super(props);
-    this.state = {
-      searchField: '',
-      searchResult: []
-    }
-    this.handleSearchField = this.handleSearchField.bind(this);
-  }
-
-  selectLocation(location) {
-    this.props.selectLocation(location);
-  }
 
   fetchApi(apiUrl, fetchFlag) {
     this.props.setFetchFlag(fetchFlag, 'fetching');
@@ -64,61 +85,23 @@ class App extends Component {
     this.fetchApi(constants.API_MAP, 'MAP');
   }
 
-  handleSearchField(ev) {
-    let searchField = ev;
-    this.setState({searchField: searchField})
-    if (this.state.searchResult !== '') {
-      const searcher = new FuzzySearch(this.props.locations, ['title'], {caseSensitive: false});
-      const result = searcher.search(searchField);
-      this.setState({searchResult: result});
-    } else
-      this.setState({searchResult: []})
-  }
-  handleCh(ev) {
-    console.log(ev);
-  }
-
   render() {
-    // let searchField = this.state.searchField;
-    return (<div className="app">
-
-      <Grid className='fullScreenFlex' container spacing={0}>
-        <Grid item xs={6} md={2} className="scrollable">
-          <Sidebar />
-          {/* <p></p>
-          <KeyboardedInput enabled name='name' inputClassName='searchField' value={searchField} isDraggable={false} defaultKeyboard="us" secondaryKeyboard="ru" placeholder={'Поиск'} isFirstLetterUppercase={false} onChange={this.handleSearchField}/> {
-            (this.state.searchField !== '')
-              ? <Fragment>
-                  <List component="div" disablePadding="disablePadding" subheader={<ListSubheader component = "div" > Результаты поиска: </ListSubheader>}>
-                    {
-                      this.state.searchResult.map((location) => {
-                        return <ListItem button="button" key={location.name} onClick={() => {
-                            this.selectLocation(location.name)
-                          }}>
-                          <ListItemText inset primary={location.title}/>
-                        </ListItem>
-                      })
-                    }
-                  </List>
-                </Fragment>
-              : null
-          }
-          {
-            (this.props.locations.length > 0)
-              ? <LocationsList/>
-              : <LinearProgress color="secondary"/>
-          } */}
-        </Grid>
-        <Grid item xs={6} md={10}>
-          {
-            // (this.props.map.length > 0)
-              // ? <InteractiveSvg data={this.props.map}/>
-              // : <CircularProgress/>
-          }
-        </Grid>
-      </Grid>
+    const {classes} = this.props;
+    return (<div className='App'>
+        <div className='fullwindow'>
+          {(this.props.map.length>0)?<InteractiveSvg data={this.props.map}/>:null }
+        </div>
+        <AppBar className={classes.customBar} position="absolute" color="default" style={{zIndex:'auto'}}>
+           <Toolbar>
+             <Button className={classes.menuButton} color="inherit" aria-label="Menu">
+               <ListIcon />
+             </Button>
+             {/* <SuggestedSearch className={classes.search} data={this.props.locations}/> */}
+             <KeyboardedInput fullWidth={true} value='' isDraggable={false} isFirstLetterUppercase={false} defaultKeyboard={'ru'} secondaryKeyboard={'us'} data={this.props.locations} />
+           </Toolbar>
+         </AppBar>
     </div>);
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(App));

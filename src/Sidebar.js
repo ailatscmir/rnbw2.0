@@ -1,8 +1,5 @@
 import React, { Component,Fragment } from 'react';
 import {connect} from "react-redux";
-
-import KeyboardedInput from 'react-touch-screen-keyboard';
-import 'react-touch-screen-keyboard/lib/Keyboard.css';
 import LocationsList from './LocationsList'
 
 const mapStateToProps = (state) => {
@@ -27,7 +24,6 @@ class Sidebar extends Component {
     console.log(this.props.locations);
     return (
       <Fragment>
-        <KeyboardedInput enabled name='name' inputClassName='searchField' value={this.state.searchFieldValue} isDraggable={false} defaultKeyboard="ru" secondaryKeyboard="us" placeholder={'Поиск'} isFirstLetterUppercase={false} onChange={this.handleSearchFieldChangle}/>
         {(this.props.locations.length!==0)
           ?<LocationsList/>
           :null
