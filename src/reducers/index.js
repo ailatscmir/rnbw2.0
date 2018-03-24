@@ -13,13 +13,16 @@ const initialState = {
   },
   currentFloor: '1',
   selectedLocation: '',
-  
+  fetchRaw: '',
+  mapRaw: []
 };
 
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
     case 'FETCH_LOCATIONS': return {...state, fetchLocations : action.payload};
     case 'FETCH_MAP': return {...state, fetchMap : action.payload};
+    case 'FETCH_RAW': return {...state, fetchRaw : action.payload};
+    case 'SAVE_RAW': return {...state, mapRaw : action.payload};
     case 'SAVE_LOCATIONS': return {...state, locations : action.payload};
     case 'SAVE_MAP': return {...state, map : action.payload};
     case 'GOTO_FLOOR': return {...state, currentFloor: action.payload};

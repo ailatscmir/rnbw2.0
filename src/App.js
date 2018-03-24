@@ -1,17 +1,11 @@
 import React, {Component} from 'react';
-import classNames from 'classnames';
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 
 import {
   AppBar,
   Toolbar,
-  IconButton,
-  Typography,
-  Button,
-  Grid,
-  CircularProgress,
-  Paper
+  Button
 } from 'material-ui/';
 
 import ListIcon from 'material-ui-icons/List';
@@ -21,8 +15,9 @@ import {withStyles} from 'material-ui/styles';
 import * as constants from './constants';
 import {setFetchFlag, saveItems} from './actions/fetch';
 
-import InteractiveSvg from './InteractiveSvg';
-import Sidebar from './Sidebar';
+// import InteractiveSvg from './InteractiveSvg';
+import D3SVG from './D3SVG'
+// import Sidebar from './Sidebar';
 
 import KeyboardedInput  from './KeyboardedInput';
 
@@ -31,7 +26,7 @@ import KeyboardedInput  from './KeyboardedInput';
 
 const mapStateToProps = state => {
   return {
-    locations:state.locations,map:state.map
+    locations:state.locations,map:state.map,raw:state.mapRaw
   }
 };
 const mapDispatchToProps = dispatch => {
@@ -83,13 +78,14 @@ class App extends Component {
   componentDidMount() {
     this.fetchApi(constants.API_LOCATIONS, 'LOCATIONS');
     this.fetchApi(constants.API_MAP, 'MAP');
+    this.fetchApi('http://trkraduga.ru/wp-json/waysApi/mapRaw', 'RAW');
   }
 
   render() {
     const {classes} = this.props;
     return (<div className='App'>
         <div className='fullwindow'>
-          {(this.props.map.length>0)?<InteractiveSvg data={this.props.map}/>:null }
+          {(this.props.raw.length>0)?<D3SVG levels={this.props.raw}/>:null }
         </div>
         <AppBar className={classes.customBar} position="absolute" color="default" style={{zIndex:'auto'}}>
            <Toolbar>
