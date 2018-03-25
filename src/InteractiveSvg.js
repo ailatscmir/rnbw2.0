@@ -3,6 +3,15 @@ import XMLParser from 'react-xml-parser';
 import Hammer from 'react-hammerjs';
 import sizeMe from 'react-sizeme';
 
+import {Button} from 'material-ui/';
+import ZoomInIcon from 'material-ui-icons/ZoomIn';
+import ZoomOutIcon from 'material-ui-icons/ZoomOut';
+
+import Map from './Map'
+
+const MIN_SCALE = 1;
+const MAX_SCALE = 4;
+
 const hammerOptions = {
   touchAction: 'compute',
   recognizers: {
@@ -11,17 +20,31 @@ const hammerOptions = {
       threshold: 2
     },
     pinch: {
-      enable: true
+      enable: true,
+      pointers: 2,
+      threshold: 0.001
     },
-    pan:{
-      threshold:10,
-      pointers:1
+    pan: {
+      threshold: 100,
+      pointers: 1
     }
   }
 };
 
-const getTransform = ({pan,pinch,x,y,currentX,currentY,scale,currentScale,center}) => {
-  let left,top,divScale;
+const getTransform = ({
+  pan,
+  pinch,
+  x,
+  y,
+  currentX,
+  currentY,
+  scale,
+  currentScale,
+  center
+}) => {
+  let left,
+    top,
+    divScale;
   if (pinch) {
     left = (x - center.x * currentScale) * 100;
     top = (y - center.y * currentScale) * 100;
@@ -36,43 +59,47 @@ const getTransform = ({pan,pinch,x,y,currentX,currentY,scale,currentScale,center
       top = (y - center.y * scale) * 100;
     };
   }
-  return {top,left,divScale}
+  return {top, left, divScale}
 }
 
-const getRatio = (planDimension, componentDimension) =>{
-  let pAsp = planDimension.height/planDimension.width;
-  let cAsp = componentDimension.height/componentDimension.width;
+const getRatio = (planDimension, componentDimension) => {
+  let pAsp = planDimension.height / planDimension.width;
+  let cAsp = componentDimension.height / componentDimension.width;
   let divisionX = 1;
   let divisionY = pAsp / cAsp;
-  return {pAsp,cAsp,divisionX,divisionY};
+  return {pAsp, cAsp, divisionX, divisionY};
 }
 
-// const rangecheck = (x,y,center,scale,fitScale) => {
-//
-//   let range = (scale-1)/2;
-//   console.log(y,scale,fitScale.fitHeight);
-//   return {newx: x,newy:y};
-//   // if ((1-scale>x - center.x * scale)||(x - center.x * scale>0)) return false;Math.max(Math.min(x,center.x+range)
-//   // return true;
-// }
+const clamp = ({x, y, scale,ratio}) => {
+  let rangeX = Math.max((ratio.divisionX*scale-1)/2,0);
+  let rangeY = Math.max((ratio.divisionY*scale-1)/2,0);
+  x = Math.max(Math.min(x,0.5+rangeX),0.5-rangeX);
+  y = Math.max(Math.min(y,0.5+rangeY),0.5-rangeY);
 
-class InteractiveSVG extends Component {
+  scale = Math.max(Math.min(scale, MAX_SCALE), MIN_SCALE);
+  return {x, y, scale};
+}
+
+class InteractiveSvg extends Component {
   constructor(props) {
     super(props);
     let XMLP = new XMLParser();
     let levels = this.props.levels.map(level => XMLP.parseFromString(level.raw));
-    let [, , width, height] = levels[0].attributes.viewBox.split(' ');
+    let [,, width, height] = levels[0].attributes.viewBox.split(' ');
     let planDimension = {
       width,
       height
     };
-
     let ratio = getRatio(planDimension, this.props.size);
 
     this.state = {
+      levels: levels,
       planDimension: planDimension,
-      ratio:ratio,
-      center: {x:ratio.divisionX/2,y:ratio.divisionY/2},
+      ratio: ratio,
+      center: {
+        x: ratio.divisionX / 2,
+        y: ratio.divisionY / 2
+      },
       x: 0.5,
       y: 0.5,
       currentX: 0.5,
@@ -92,22 +119,29 @@ class InteractiveSVG extends Component {
     this.handlePinchEnd = this.handlePinchEnd.bind(this);
   }
 
-
-
   componentWillReceiveProps(nextProps) {
-    console.log({newProps:nextProps});
     let ratio = getRatio(this.state.planDimension, nextProps.size);
     this.setState({
       ratio: ratio,
-      center: {x:ratio.divisionX/2,y:ratio.divisionY/2}
+      center: {
+        x: ratio.divisionX / 2,
+        y: ratio.divisionY / 2
+      }
     });
   }
 
-  setTransform({x=this.state.x,y=this.state.y,scale=this.state.scale,current=false}){
-    if (!current){
-        this.setState({x:x,y:y,scale:scale});
+  setTransform({
+    x = this.state.x,
+    y = this.state.y,
+    scale = this.state.scale,
+    current = false
+  }) {
+    let {ratio} = this.state;
+    ({x, y, scale} = clamp({x, y, scale,ratio}));
+    if (!current) {
+      this.setState({x: x, y: y, scale: scale});
     } else {
-        this.setState({currentX:x,currentY:y,currentScale:scale});
+      this.setState({currentX: x, currentY: y, currentScale: scale});
     }
   }
 
@@ -115,34 +149,42 @@ class InteractiveSVG extends Component {
   handleWheel(ev) {
     ev.preventDefault();
     let newScale = this.state.scale + 0.005 * ev.deltaY;
-    this.setTransform({scale:(newScale > 1)?newScale:1});
+    this.setTransform({
+      scale: (newScale > 1)
+        ? newScale
+        : 1
+    });
   }
 
   handlePinchStart(ev) {
+    console.log('start');
     this.setState({pinch: true});
   }
 
   handlePinchEnd(ev) {
+    console.log('end');
     let {currentScale} = this.state;
-    this.setState({pinch: false, scale: currentScale});
+    this.setState({pinch: false});
+    this.setTransform({scale: currentScale});
   }
 
   handlePinch(ev) {
+    console.log('pinch');
     ev.preventDefault();
     let {scale} = this.state;
-    this.setTransform({scale:scale * ev.scale,current:true});
-    // this.setState({
-    //   currentScale:
-    // });
+    this.setTransform({
+      scale: scale * ev.scale,
+      current: true
+    });
   }
 
   // PAN_EVENTS
   handlePan(ev) {
     ev.preventDefault();
-    let {x,y} = this.state;
+    let {x, y} = this.state;
     let newx = x + ev.deltaX / this.props.size.width;
     let newy = y + ev.deltaY / this.props.size.height;
-    this.setTransform({x:newx,y:newy,current:true});
+    this.setTransform({x: newx, y: newy, current: true});
   }
 
   handlePanStart(ev) {
@@ -155,26 +197,56 @@ class InteractiveSVG extends Component {
     let {currentX, currentY} = this.state;
     this.setState({pan: false, x: currentX, y: currentY});
   }
-
+  handleZoomButton(par){
+    let {scale} = this.state;
+    let factor = 0.3;
+    this.setTransform({scale:scale*(1+factor*par)});
+  }
   render() {
-    const {pan,pinch,x,y,currentX,currentY,scale,currentScale,center} = this.state;
-    let {top,left,divScale} = getTransform({pan,pinch,x,y,currentX,currentY,scale,currentScale,center});
+    const {
+      pan,
+      pinch,
+      x,
+      y,
+      currentX,
+      currentY,
+      scale,
+      currentScale,
+      center
+    } = this.state;
+    let {top, left, divScale} = getTransform({
+      pan,
+      pinch,
+      x,
+      y,
+      currentX,
+      currentY,
+      scale,
+      currentScale,
+      center
+    });
 
-    return (<Hammer options={hammerOptions} onWheel={this.handleWheel} onPan={this.handlePan} onPanStart={this.handlePanStart} onPanEnd={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handlePinchEnd}>
+    return (<Hammer options={hammerOptions} onWheel={this.handleWheel} onPan={this.handlePan} onPanStart={this.handlePanStart} onPanEnd={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handlePinchEnd} onPinchCancel={this.handlePinchEnd}>
       <div style={{
           height: '100vh',
           width: '100vw',
-          // background: '#333'
+          background:'#333'
         }}>
+        <Button variant="fab" color="primary" aria-label="add" style={{position:'absolute',right:'3%',top:'40%',zIndex:'100000'}} onClick={() => {this.handleZoomButton(1)}}>
+          <ZoomInIcon/>
+        </Button>
+        <Button variant="fab" color="primary" aria-label="add" style={{position:'absolute',right:'3%',top:'48%',zIndex:'100000'}} onClick={() => {this.handleZoomButton(-1)}}>
+          <ZoomOutIcon/>
+        </Button>
         <div className='svgWrap' style={{
             position: 'relative',
             height: `${divScale}%`,
             width: `${divScale}%`,
             left: `${left}%`,
             top: `${top}%`
-          }} dangerouslySetInnerHTML={{
-            __html: this.props.levels[0].raw
-          }}/>
+          }}>
+          <Map levels={this.state.levels}/>
+        </div>
       </div>
     </Hammer>);
   }
@@ -187,4 +259,4 @@ const config = {
 };
 const sizeMeHOC = sizeMe(config);
 
-export default sizeMeHOC(InteractiveSVG);
+export default sizeMeHOC(InteractiveSvg);
