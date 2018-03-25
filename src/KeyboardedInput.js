@@ -128,7 +128,7 @@ class KeyboardedInput extends React.Component {
         flexGrow: 1
       }}>
       <FormControl onFocus={this.handleFocus} onBlur={this.handleBlur} onChange={this.handleChange} fullWidth>
-        <Input value={this.state.inputValue}onChange={this.handleChange} startAdornment={<InputAdornment position = "start" > <Search/></InputAdornment>}/>
+        <Input value={this.state.inputValue}onChange={this.handleChange} placeholder='Поиск по названию или ключевым словам' startAdornment={<InputAdornment position = "start" > <Search/></InputAdornment>}/>
       </FormControl>
       <Paper className={classes.paper}>
         {

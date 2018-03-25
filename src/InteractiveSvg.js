@@ -1,299 +1,190 @@
-import React, {Component} from 'react'
-
+import React, {Component} from 'react';
+import XMLParser from 'react-xml-parser';
 import Hammer from 'react-hammerjs';
-
 import sizeMe from 'react-sizeme';
-import {scale, translate, transform, toCSS} from 'transformation-matrix';
-import Button from 'material-ui/Button';
-import One from 'material-ui-icons/LooksOne';
-import Two from 'material-ui-icons/LooksTwo';
-import Floor from './Floor';
 
-function clampZoom(zoom, min, max) {
-  return Math.min(Math.max(min, zoom), max);
-}
+const hammerOptions = {
+  touchAction: 'compute',
+  recognizers: {
+    tap: {
+      time: 200,
+      threshold: 2
+    },
+    pinch: {
+      enable: true
+    },
+    pan:{
 
+    }
+  }
+};
 
-function clampPan(value, range) {
+const getTransform = ({pan,pinch,x,y,currentX,currentY,scale,currentScale,center}) => {
 
-  let clampedValue = value;
-  if (range > 0) {
-    clampedValue = Math.min(Math.max(0 - range, value), 0);
+  let left,top,divScale;
+  if (pinch) {
+    left = (x - center.x * currentScale) * 100;
+    top = (y - center.y * currentScale) * 100;
+    divScale = 100 * currentScale;
   } else {
-    clampedValue = Math.abs(range / 2)
-  };
-  return clampedValue;
+    divScale = 100 * scale;
+    if (pan) {
+      left = (currentX - center.x * scale) * 100;
+      top = (currentY - center.y * scale) * 100;
+    } else {
+      left = (x - center.x * scale) * 100;
+      top = (y - center.y * scale) * 100;
+    };
+  }
+
+  return {top,left,divScale}
 }
 
-function getTransformation({x, y, zoom}) {
-  return toCSS(transform(translate(x, y), scale(zoom, zoom)));
+const getRatio = (planDimension, componentDimension) =>{
+  let pAsp = planDimension.height/planDimension.width;
+  let cAsp = componentDimension.height/componentDimension.width;
+  let divisionX = 1;
+  let divisionY = pAsp / cAsp;
+  return {pAsp,cAsp,divisionX,divisionY};
 }
 
-function floorCompare(a, b) {
-  if (a['title'] < b['title'])
-    return -1;
-  if (a['title'] > b['title'])
-    return 1;
-  return 0;
+const fitScaleCalculate = (planDimension, componentDimension) => {
+  let fitWidth = componentDimension.width / planDimension.width;
+  let fitHeight = componentDimension.height / planDimension.height;
+  return {fitHeight,fitWidth};
 }
 
-function getMinZoom({
-  height: mapHeight,
-  width: mapWidth
-}, {
-  height: containerHeight,
-  width: containerWidth
-}) {
-  return (mapHeight < mapWidth)
-    ? containerWidth / mapWidth
-    : containerHeight / mapHeight;
-}
+// const rangecheck = (x,y,center,scale,fitScale) => {
+//
+//   let range = (scale-1)/2;
+//   console.log(y,scale,fitScale.fitHeight);
+//   return {newx: x,newy:y};
+//   // if ((1-scale>x - center.x * scale)||(x - center.x * scale>0)) return false;Math.max(Math.min(x,center.x+range)
+//   // return true;
+// }
 
-function fitToContainer(mapSize, containerSize) {
-  let {height: mapHeight, width: mapWidth} = mapSize;
-  let {height: containerHeight, width: containerWidth} = containerSize;
-
-  let zoom = getMinZoom(mapSize, containerSize);
-  let x = (containerWidth - mapWidth * zoom) / 2;
-  let y = (containerHeight - mapHeight * zoom) / 2;
-  return {x: x, y: y, zoom: zoom};
-}
-
-class InteractiveSvg extends Component {
-
+class InteractiveSVG extends Component {
   constructor(props) {
     super(props);
+    let XMLP = new XMLParser();
+    let levels = this.props.levels.map(level => XMLP.parseFromString(level.raw));
+    let [top, left, width, height] = levels[0].attributes.viewBox.split(' ');
+    let planDimension = {
+      width,
+      height
+    };
 
-    let dimensions = this.props.data[0]['@attributes']['viewBox'].split(' ');
-    let mapSize = {
-      height: (Number)(dimensions[3]),
-      width: (Number)(dimensions[2])
+    let fitScale = fitScaleCalculate(planDimension, this.props.size);
+    let center = {
+      y: height * fitScale.fitWidth / 2 / this.props.size.height,
+      x: width * fitScale.fitWidth / 2 / this.props.size.width
     };
-    let containerSize = this.props.size;
-    let {x, y, zoom} = fitToContainer(mapSize, containerSize);
+
+    let ratio = getRatio(planDimension, this.props.size);
+
     this.state = {
-      resistance: 0.92,
-      factor: 20,
-      floors: this.props.data,
-      mapSize: mapSize,
-      containerSize: containerSize,
-      zoom: zoom,
-      currentZoom: zoom,
-      minZoom: zoom,
-      maxZoom: 4,
-      rangeX: 0,
-      rangeY: 0,
-      x: x,
-      y: y,
-      currentX: x,
-      currentY: y,
+      planDimension: planDimension,
+      ratio:ratio,
+      center: center,
+      fitScale: fitScale,
+      x: 0.5,
+      y: 0.5,
+      currentX: 0.5,
+      currentY: 0.5,
+      scale: 1,
+      currentScale: 1,
       pan: false,
-      pinch: false,
-      hammerEvent:''
+      pinch: false
     };
+
+    this.handleWheel = this.handleWheel.bind(this);
     this.handlePan = this.handlePan.bind(this);
     this.handlePanStart = this.handlePanStart.bind(this);
     this.handlePanEnd = this.handlePanEnd.bind(this);
-    this.handlePanCancel = this.handlePanCancel.bind(this);
-    this.handleWheel = this.handleWheel.bind(this);
+    this.handlePinch = this.handlePinch.bind(this);
     this.handlePinchStart = this.handlePinchStart.bind(this);
     this.handlePinchEnd = this.handlePinchEnd.bind(this);
-    this.handlePinch = this.handlePinch.bind(this);
   }
 
-  componentDidMount() {
-    this.updateRange(this.state.zoom);
-  }
-
-  updateRange(zoom) {
-    let {height: mapHeight, width: mapWidth} = this.state.mapSize;
-    let {height: containerHeight, width: containerWidth} = this.state.containerSize;
-    let rangeX = mapWidth * zoom - containerWidth;
-    let rangeY = mapHeight * zoom - containerHeight;
-    this.setState({rangeX, rangeY});
-  }
-
-  transformMap({
-    x = this.state.x,
-    y = this.state.y,
-    zoom = this.state.zoom,
-    current = false})
-    {
-    let {rangeX, rangeY, minZoom,maxZoom} = this.state;
-    zoom = clampZoom(zoom,minZoom,maxZoom);
-    this.updateRange(zoom);
-    if (current) {
-      this.setState({
-        currentX: clampPan(x, rangeX),
-        currentY: clampPan(y, rangeY),
-        currentZoom: zoom
-      })
-    } else {
-      this.setState({
-        x: clampPan(x, rangeX),
-        y: clampPan(y, rangeY),
-        currentX: clampPan(x, rangeX),
-        currentY: clampPan(y, rangeY),
-        zoom: zoom,
-        currentZoom:zoom
-      })
-    }
-  }
-
-  // scaleTo({zoom:zoom,current = false}){
-  //
-  // }
-
-  braking(velocityX, velocityY) {
-    let {factor, resistance} = this.state;
-    let {x, y} = this.state;
-    if (!(this.state.pan)) {
-      this.transformMap({
-        x: x + velocityX * factor,
-        y: y + velocityY * factor
-      });
-      if ((Math.abs(velocityX * resistance * factor) > 0.5) && (Math.abs(velocityY * resistance * factor) > 0.5)) {
-        setTimeout(() => {
-          this.braking(velocityX * resistance, velocityY * resistance)
-        }, 10);
-      }
-    }
-  }
-
-  handlePan(ev) {
-    ev.preventDefault();
-    console.log(ev.type);
-    this.setState({hammerEvent:ev.type});
-    let {x, y} = this.state;
-    this.transformMap({
-      x: x + ev.deltaX,
-      y: y + ev.deltaY,
-      current: true
+  componentWillReceiveProps(nextProps) {
+    console.log({newProps:nextProps});
+    let ratio = getRatio(this.state.planDimension, nextProps.size);
+    this.setState({
+      fitScale: fitScaleCalculate(this.state.planDimension, nextProps.size),
+      ratio: ratio,
+      center: {x:ratio.divisionX/2,y:ratio.divisionY/2}
     });
   }
 
-  handlePanStart(ev) {
+  // ZOOM_EVENTS
+  handleWheel(ev) {
     ev.preventDefault();
-    this.setState({pan: true})
+    let newScale = this.state.scale + 0.005 * ev.deltaY;
+    if (newScale > 1) {
+      this.setState({scale: newScale})
+    } else {
+      this.setState({scale: 1})
+    }
+  }
+  handlePinchStart(ev) {
+    this.setState({pinch: true});
+  }
+  handlePinchEnd(ev) {
+    let {currentScale} = this.state;
+    this.setState({pinch: false, scale: currentScale});
+  }
+  handlePinch(ev) {
+    ev.preventDefault();
+    let {scale} = this.state;
+    this.setState({
+      currentScale: scale * ev.scale
+    });
   }
 
+  // PAN_EVENTS
+  handlePan(ev) {
+    ev.preventDefault();
+    let {x, y, scale,center,fitScale} = this.state;
+    let newx = x + ev.deltaX / this.props.size.width;
+    let newy = y + ev.deltaY / this.props.size.height
+    this.setState({
+      currentX: newx,
+      currentY: newy
+    })
+  }
+  handlePanStart(ev) {
+    ev.preventDefault();
+    this.setState({pan: true});
+  }
   handlePanEnd(ev) {
     ev.preventDefault();
     let {currentX, currentY} = this.state;
-    this.setState({pan: false});
-    this.transformMap({ x:currentX, y:currentY });
-    this.braking(ev.velocityX, ev.velocityY);
-  }
-
-  handlePanCancel(ev) {
-    ev.preventDefault();
-    let {currentX, currentY} = this.state;
-    this.setState({pan: false});
-    this.transformMap({ x:currentX, y:currentY });
-    this.braking(ev.velocityX, ev.velocityY);
-  }
-
-  handleWheel(ev) {
-    ev.preventDefault();
-    let deltaY = ev.deltaY;
-    let {
-      zoom,
-      minZoom,
-      maxZoom,
-      x,
-      y,
-      mapSize
-    } = this.state;
-    let newZoom = clampZoom(zoom + deltaY/Math.pow(maxZoom,1/zoom)/100, minZoom, maxZoom);
-    let newX = x+(zoom-newZoom)*mapSize.width/2;
-    let newY = y+(zoom-newZoom)*mapSize.height/2;
-    // console.log({newY,zoom,newZoom,mapSize});
-    this.transformMap({x:newX,y:newY,zoom:newZoom});
-  }
-
-  handlePinchStart(ev) {
-    console.log('pinchstart');
-    this.setState({pinch: true});
-  }
-
-  handlePinchEnd(ev) {
-    this.setState({pinch: false});
-    let {currentX,currentY,currentZoom} = this.state;
-    this.transformMap({x:currentX,y:currentY,zoom: currentZoom});
-  }
-
-  handlePinch(ev) {
-    ev.preventDefault();
-    this.setState({hammerEvent:ev.type});
-    let {x,y,zoom,mapSize} = this.state;
-    let newZoom = zoom*ev.scale;
-    let newX = x+(zoom-newZoom)*mapSize.width/2;
-    let newY = y+(zoom-newZoom)*mapSize.height/2;
-    this.transformMap({x:newX,y:newY,zoom:newZoom,current:true});
+    this.setState({pan: false, x: currentX, y: currentY});
   }
 
   render() {
-    var options = {
-      touchAction: 'compute',
-      recognizers: {
-        tap: {
-          time: 600,
-          threshold: 100
-        },
-        pinch: {
-          enable: true
-        }
-      }
-    };
+    const {pan,pinch,x,y,currentX,currentY,scale,currentScale,center} = this.state;
+    let {top,left,divScale} = getTransform({pan,pinch,x,y,currentX,currentY,scale,currentScale,center});
 
-    let {mapSize, containerSize} = this.state;
-    let {
-      x,
-      y,
-      currentX,
-      currentY,
-      zoom,
-      currentZoom
-    } = this.state;
-    let floors = this.state.floors;
-
-    floors.sort(floorCompare);
-    return (<div style={{
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden'
-      }}>
-      <Hammer options={options} onWheel={this.handleWheel} onPanStart={this.handlePanStart} onPanEnd={this.handlePanEnd} onPanCancel={this.handlePanCancel} onPan={this.handlePan} onPinchStart={this.handlePinchStart} onPinchEnd={this.handlePinchEnd} onPinch={this.handlePinch}>
-        <div>
-          <svg id='interactiveSvg' height={mapSize.height} width={mapSize.width} viewBox={'0 0 3500 1400'} preserveAspectRatio='xMidYMid meet'>
-            <g className='controlGroup' transform={getTransformation({
-                x: ((this.state.pan)||(this.state.pinch))
-                  ? currentX
-                  : x,
-                y: ((this.state.pan)||(this.state.pinch))
-                  ? currentY
-                  : y,
-                zoom: (this.state.pinch)
-                  ? currentZoom
-                  : zoom
-              })}>
-              {
-                floors.map((floor, index) => {
-                  return <Floor key={floor['title']} index={index} data={floor['g']}/>;
-                })
-              }
-            </g>
-          </svg>
-          {/* <Button style={{position:'absolute',bottom:'16px',right:'86px'}} variant="fab" color="secondary" aria-label="edit">
-              <One />
-          </Button>
-          <Button style={{position:'absolute',bottom:'16px',right:'16px'}} variant="fab" color="secondary" aria-label="edit">
-              <Two />
-          </Button> */}
-        </div>
-      </Hammer>
-    </div>);
+    return (<Hammer options={hammerOptions} onWheel={this.handleWheel} onPan={this.handlePan} onPanStart={this.handlePanStart} onPanEnd={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handlePinchEnd}>
+      <div style={{
+          height: '100vh',
+          width: '100vw',
+          background: '#333'
+        }}>
+        <div className='svgWrap' style={{
+            position: 'relative',
+            height: `${divScale}%`,
+            width: `${divScale}%`,
+            left: `${left}%`,
+            top: `${top}%`
+          }} dangerouslySetInnerHTML={{
+            __html: this.props.levels[0].raw
+          }}/>
+      </div>
+    </Hammer>);
   }
+
 }
 
 const config = {
@@ -302,4 +193,4 @@ const config = {
 };
 const sizeMeHOC = sizeMe(config);
 
-export default sizeMeHOC(InteractiveSvg);
+export default sizeMeHOC(InteractiveSVG);

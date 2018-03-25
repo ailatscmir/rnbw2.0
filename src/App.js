@@ -15,8 +15,7 @@ import {withStyles} from 'material-ui/styles';
 import * as constants from './constants';
 import {setFetchFlag, saveItems} from './actions/fetch';
 
-// import InteractiveSvg from './InteractiveSvg';
-import D3SVG from './D3SVG'
+import InteractiveSVG from './InteractiveSVG'
 // import Sidebar from './Sidebar';
 
 import KeyboardedInput  from './KeyboardedInput';
@@ -85,7 +84,7 @@ class App extends Component {
     const {classes} = this.props;
     return (<div className='App'>
         <div className='fullwindow'>
-          {(this.props.raw.length>0)?<D3SVG levels={this.props.raw}/>:null }
+          {(this.props.raw.length>0)?<InteractiveSVG levels={this.props.raw}/>:null }
         </div>
         <AppBar className={classes.customBar} position="absolute" color="default" style={{zIndex:'auto'}}>
            <Toolbar>
