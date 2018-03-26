@@ -10,8 +10,8 @@
   position: fixed;
   bottom: 0;
   z-index: 10000;
-  width: 700px;
-  left: calc(50% - 350px)
+  width: 880px;
+  left: calc(50% - 440px)
 }
 
 .keyboard-wrapper .keyboard-row {
@@ -51,7 +51,11 @@
 }
 
 .keyboard-button.shift-symbols {
-  flex-basis: 150px
+  flex-basis: 120px
+}
+
+.keyboard-button.amp {
+  flex-basis: 120px
 }
 
 .keyboard-button.keyboard-numberButton {

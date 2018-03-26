@@ -1,5 +1,9 @@
 import React, { Component,Fragment} from 'react';
 import Level from './Level';
+import {connect} from "react-redux";
+const mapStateToProps = (state) => {
+  return {currentFloor:state.currentFloor}
+}
 
 class Map extends Component {
   constructor(props) {
@@ -9,13 +13,15 @@ class Map extends Component {
     };
   }
   render() {
+
     return (<Fragment>
       {this.props.levels.map((level,index) => {
-        return <Level key={index} data={level} className={(this.state.current!==index?'hideFloor':null)}/>
+        // console.log(index.toString()this.props.currentFloor);
+        return <Level key={index} index={index} data={level} className={(this.props.currentFloor!==index?'hideFloor':null)}/>
       })}
     </Fragment>);
   }
 
 }
 
-export default Map;
+export default connect(mapStateToProps,null)(Map);

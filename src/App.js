@@ -21,7 +21,9 @@ import InteractiveSvg from './InteractiveSvg'
 import KeyboardedInput  from './KeyboardedInput';
 
 
-
+const setWayNumber = (wayNum) => {
+  return {type:'SET_WAY_NUMBER',payload:wayNum}
+}
 
 const mapStateToProps = state => {
   return {
@@ -31,6 +33,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     setFetchFlag: bindActionCreators(setFetchFlag, dispatch),
+    setWayNumber:bindActionCreators(setWayNumber, dispatch),
     saveItems: bindActionCreators(saveItems, dispatch)
   }
 };
@@ -60,7 +63,11 @@ const styles = theme => ({
 });
 
 class App extends Component {
+  constructor(props) {
+    super(props);
 
+    this.state = {};
+  }
   fetchApi(apiUrl, fetchFlag) {
     this.props.setFetchFlag(fetchFlag, 'fetching');
     fetch(apiUrl).then((response) => {
@@ -77,14 +84,14 @@ class App extends Component {
   componentDidMount() {
     this.fetchApi(constants.API_LOCATIONS, 'LOCATIONS');
     this.fetchApi(constants.API_MAP, 'MAP');
-    this.fetchApi('http://trkraduga.ru/wp-json/waysApi/mapRaw', 'RAW');
+    this.props.setWayNumber('way'+window.location.hash.replace('#',''));
   }
 
   render() {
     const {classes} = this.props;
     return (<div className='App'>
         <div className='fullwindow'>
-          {(this.props.raw.length>0)?<InteractiveSvg levels={this.props.raw}/>:null }
+          {(this.props.map.length>0)?<InteractiveSvg levels={this.props.map}/>:null }
         </div>
         <AppBar className={classes.customBar} position="absolute" color="default" style={{zIndex:'auto'}}>
            <Toolbar>

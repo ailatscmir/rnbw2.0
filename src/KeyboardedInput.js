@@ -1,33 +1,57 @@
 import React from 'react';
+import {connect} from "react-redux";
+import {bindActionCreators} from 'redux';
 import PropTypes from 'prop-types';
 import Keyboard from './Keyboard';
 import './keyboard.css';
 import {withStyles} from 'material-ui/styles';
+import Fuse from 'fuse.js';
 import {
   FormControl,
   Input,
   InputAdornment,
-  MenuItem,
-  Paper
+  ListItem,
+  ListItemText,
+  Paper,
+  IconButton
 } from 'material-ui/';
 import Search from 'material-ui-icons/Search';
+import Clear from 'material-ui-icons/Clear';
+const fuseOptions = {
+  shouldSort: true,
+  includeMatches: true,
+  includeScore: true,
+  threshold: 0.3,
+  location: 0,
+  distance: 100,
+  maxPatternLength: 32,
+  minMatchCharLength: 1,
+  keys: [
+    {name:"title",weight:0.8},
+    {name:"searchKeys",weight:0.3},
+    {name:"category.name",weight:0.5}
+]
+};
 
-function getSuggestions(inputValue, data) {
-  let count = 0;
 
-  return data.filter(location => {
-    const keep = (inputValue !== '') && (!inputValue || location.title.toLowerCase().indexOf(inputValue.toLowerCase()) !== -1) && (count < 5) && (location.title !==inputValue);
-    if (keep) {
-      count += 1;
-    }
+const setSelectedLocation = (location) =>{
+  return {type:'SET_SELECTED_LOCATION',payload:location}
+}
 
-    return keep;
-  });
+const getSuggestions = (inputValue, data) => {
+  let fuse = new Fuse(data,fuseOptions);
+  return fuse.search(inputValue).slice(0,8);
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    setSelectedLocation: bindActionCreators(setSelectedLocation, dispatch)
+  }
 }
 
 const styles = theme => ({
   container: {
-    flexGrow: 0.4,
+    flexGrow: 3,
     position: 'relative'
   },
   paper: {
@@ -76,6 +100,7 @@ class KeyboardedInput extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
     this.hideKeyboard = this.hideKeyboard.bind(this);
+    this.handleClear = this.handleClear.bind(this);
 
     this.state = {
       showKeyboard: false,
@@ -110,9 +135,9 @@ class KeyboardedInput extends React.Component {
     }, 0);
   }
 
-  handleSelect(ev){
-    console.log('selected '+ev.target.title);
-    this.setState({inputValue:ev.target.title});
+  handleSelect({title,id}){
+    this.props.setSelectedLocation(id);
+    this.setState({inputValue:title});
   }
 
   hideKeyboard() {
@@ -121,24 +146,40 @@ class KeyboardedInput extends React.Component {
       showKeyboard: false
     });
   }
-
+  handleClear(){
+    console.log('clear');
+    document.getElementById("kinput").focus();
+    this.setState({inputValue:''});
+    this.props.setSelectedLocation('');
+  }
   render() {
     const {classes} = this.props;
     return (<div style={{
         flexGrow: 1
       }}>
-      <FormControl onFocus={this.handleFocus} onBlur={this.handleBlur} onChange={this.handleChange} fullWidth>
-        <Input value={this.state.inputValue}onChange={this.handleChange} placeholder='Поиск по названию или ключевым словам' startAdornment={<InputAdornment position = "start" > <Search/></InputAdornment>}/>
+      <FormControl className='container' onFocus={this.handleFocus} onBlur={this.handleBlur} onChange={this.handleChange} fullWidth>
+        <Input autoFocus id="kinput" value={this.state.inputValue} onChange={this.handleChange} placeholder='Поиск по названию или ключевым словам'
+          startAdornment={<InputAdornment position = "start" ><Search/></InputAdornment>}
+          endAdornment={(this.state.inputValue!=='')?<InputAdornment position = "end" onClick={this.handleClear}><IconButton><Clear/></IconButton></InputAdornment>:null}
+          // endAdorment={<InputAdornment position = "end" ><Clear/></InputAdornment>}
+        />
+
       </FormControl>
+
       <Paper className={classes.paper}>
         {
           getSuggestions(this.state.inputValue, this.props.data).map((suggestion, index) => {
-            return (<MenuItem key={index} component="div" onClick={this.handleSelect} title={suggestion.title}>
-              {suggestion.title}
-            </MenuItem>)
+            let hint;
+            if (suggestion.matches[0].key!=='title'){
+              hint = ((suggestion.matches[0].key==='category.name')?'Категория: ':'Ключевое слово: ')+suggestion.matches[0].value
+            } else hint=null;
+            return ((this.state.inputValue!==suggestion.item.title)?<ListItem button key={index} component="div" id={suggestion.item.name} onClick={() => this.handleSelect({title:suggestion.item.title,id:suggestion.item.name})}>
+              <ListItemText primary={suggestion.item.title} secondary={hint}/>
+            </ListItem>:null)
           })
         }
       </Paper>
+
       {
         (this.state.input)
           ? <Keyboard defaultKeyboard={this.props.defaultKeyboard} secondaryKeyboard={this.props.secondaryKeyboard} inputNode={this.state.input} dataset={this.props.dataset} isFirstLetterUppercase={this.props.isFirstLetterUppercase}/>
@@ -149,4 +190,4 @@ class KeyboardedInput extends React.Component {
   }
 }
 
-export default withStyles(styles)(KeyboardedInput);
+export default connect(null,mapDispatchToProps)(withStyles(styles)(KeyboardedInput));

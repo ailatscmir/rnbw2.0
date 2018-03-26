@@ -11,7 +11,10 @@ html, body,#root {
   flex-direction: row;
   align-content: stretch;
 }
-
+#canvas{
+  fill:none!important;
+  stroke:none;
+}
 .app {
   width: 100%;
   flex:1;
@@ -34,7 +37,7 @@ html, body,#root {
 }
 
 .hideFloor {
-  display: none;
+  display: none!important;
 }
 .controlGroup{
 

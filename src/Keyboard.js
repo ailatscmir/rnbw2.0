@@ -249,13 +249,11 @@ export default class Keyboard extends PureComponent {
 
               {keys.length === i + 1 &&
                 <KeyboardButton
-                  value={<LanguageIcon />}
-                  onClick={this.handleLanguageClick}
+                  classes="amp"
+                  value={' & '}
+                  onClick={this.handleLetterButtonClick}
                 />
-                // <KeyboardButton
-                //   classes="shift-symbols"
-                //   value={symbolsKeyValue}
-                //   onClick={this.handleSymbolsClick}
+
                 // />
               }
             </div>,
@@ -275,6 +273,11 @@ export default class Keyboard extends PureComponent {
               classes="keyboard-space"
               onClick={this.handleLetterButtonClick}
             />
+            <KeyboardButton
+              value={<LanguageIcon />}
+              onClick={this.handleLanguageClick}
+            />
+
             {inputNode.dataset.type === 'email' ?
               <KeyboardButton
                 value={'.'}

@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
-import XMLParser from 'react-xml-parser';
+import {connect} from "react-redux";
+import {bindActionCreators} from 'redux';
 import Hammer from 'react-hammerjs';
 import sizeMe from 'react-sizeme';
-
 import {Button} from 'material-ui/';
 import ZoomInIcon from 'material-ui-icons/ZoomIn';
 import ZoomOutIcon from 'material-ui-icons/ZoomOut';
@@ -11,6 +11,21 @@ import Map from './Map'
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 4;
+
+const setMovementComplete = () => {
+  return {type:'SET_MOVEMENT_COMPLETE',payload:true}
+}
+
+const mapStateToProps = state => {
+  return {
+    selectedLocation:state.selectedLocation,
+    selectedCenter:state.selectedCenter
+  }
+};
+
+const mapDispatchToProps = dispatch => {
+  return {setMovementComplete: bindActionCreators(setMovementComplete, dispatch)}
+}
 
 const hammerOptions = {
   touchAction: 'compute',
@@ -25,7 +40,7 @@ const hammerOptions = {
       threshold: 0.001
     },
     pan: {
-      threshold: 100,
+      threshold: 1,
       pointers: 1
     }
   }
@@ -83,20 +98,24 @@ const clamp = ({x, y, scale,ratio}) => {
 class InteractiveSvg extends Component {
   constructor(props) {
     super(props);
-    let XMLP = new XMLParser();
-    let levels = this.props.levels.map(level => XMLP.parseFromString(level.raw));
-    let [,, width, height] = levels[0].attributes.viewBox.split(' ');
+    let levels = this.props.levels;
+
+    let [,, width, height] = levels[0]['@attributes'].viewBox.split(' ');
     let planDimension = {
       width,
       height
     };
     let ratio = getRatio(planDimension, this.props.size);
-
     this.state = {
+      movedTo:null,
       levels: levels,
       planDimension: planDimension,
       ratio: ratio,
       center: {
+        x: ratio.divisionX / 2,
+        y: ratio.divisionY / 2
+      },
+      focusPoint:{
         x: ratio.divisionX / 2,
         y: ratio.divisionY / 2
       },
@@ -118,18 +137,6 @@ class InteractiveSvg extends Component {
     this.handlePinchStart = this.handlePinchStart.bind(this);
     this.handlePinchEnd = this.handlePinchEnd.bind(this);
   }
-
-  componentWillReceiveProps(nextProps) {
-    let ratio = getRatio(this.state.planDimension, nextProps.size);
-    this.setState({
-      ratio: ratio,
-      center: {
-        x: ratio.divisionX / 2,
-        y: ratio.divisionY / 2
-      }
-    });
-  }
-
   setTransform({
     x = this.state.x,
     y = this.state.y,
@@ -145,8 +152,32 @@ class InteractiveSvg extends Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.selectedCenter){
+      if (!nextProps.selectedCenter.moved) {
+        let planDimension = this.state.planDimension;
+        let selectedCenter = nextProps.selectedCenter
+        // console.log('moveTo',{x:selectedCenter.x/planDimension.width,y:selectedCenter.y/planDimension.height});
+        this.setState({focusPoint:{x:selectedCenter.x/planDimension.width,y:selectedCenter.y/planDimension.height}});
+        // this.setTransform({x:selectedCenter.x/planDimension.width*this.state.scale,y:selectedCenter.y/planDimension.height*this.state.scale});
+        this.props.setMovementComplete();
+      }
+    }
+    let ratio = getRatio(this.state.planDimension, nextProps.size);
+    this.setState({
+      ratio: ratio,
+      center: {
+        x: ratio.divisionX / 2,
+        y: ratio.divisionY / 2
+      }
+    });
+  }
+
+
+
   // ZOOM_EVENTS
   handleWheel(ev) {
+    console.log(ev);
     ev.preventDefault();
     let newScale = this.state.scale + 0.005 * ev.deltaY;
     this.setTransform({
@@ -157,11 +188,13 @@ class InteractiveSvg extends Component {
   }
 
   handlePinchStart(ev) {
+    console.log(ev);
     console.log('start');
     this.setState({pinch: true});
   }
 
   handlePinchEnd(ev) {
+    console.log(ev);
     console.log('end');
     let {currentScale} = this.state;
     this.setState({pinch: false});
@@ -169,6 +202,7 @@ class InteractiveSvg extends Component {
   }
 
   handlePinch(ev) {
+    console.log(ev);
     console.log('pinch');
     ev.preventDefault();
     let {scale} = this.state;
@@ -180,6 +214,7 @@ class InteractiveSvg extends Component {
 
   // PAN_EVENTS
   handlePan(ev) {
+    console.log(ev);
     ev.preventDefault();
     let {x, y} = this.state;
     let newx = x + ev.deltaX / this.props.size.width;
@@ -188,11 +223,13 @@ class InteractiveSvg extends Component {
   }
 
   handlePanStart(ev) {
+    console.log(ev);
     ev.preventDefault();
     this.setState({pan: true});
   }
 
   handlePanEnd(ev) {
+    console.log(ev);
     ev.preventDefault();
     let {currentX, currentY} = this.state;
     this.setState({pan: false, x: currentX, y: currentY});
@@ -214,6 +251,7 @@ class InteractiveSvg extends Component {
       currentScale,
       center
     } = this.state;
+
     let {top, left, divScale} = getTransform({
       pan,
       pinch,
@@ -226,18 +264,21 @@ class InteractiveSvg extends Component {
       center
     });
 
+
     return (<Hammer options={hammerOptions} onWheel={this.handleWheel} onPan={this.handlePan} onPanStart={this.handlePanStart} onPanEnd={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handlePinchEnd} onPinchCancel={this.handlePinchEnd}>
       <div style={{
           height: '100vh',
           width: '100vw',
-          background:'#333'
+          background:'#25324D'
         }}>
-        <Button variant="fab" color="primary" aria-label="add" style={{position:'absolute',right:'3%',top:'40%',zIndex:'100000'}} onClick={() => {this.handleZoomButton(1)}}>
+        {/* <Button variant="fab" color="primary" aria-label="add" style={{position:'absolute',right:'3%',top:'40%',zIndex:'100000'}} onClick={() => {this.handleZoomButton(1)}}>
           <ZoomInIcon/>
         </Button>
-        <Button variant="fab" color="primary" aria-label="add" style={{position:'absolute',right:'3%',top:'48%',zIndex:'100000'}} onClick={() => {this.handleZoomButton(-1)}}>
+        <Button variant="fab" color="primary" aria-label="add" style={{position:'absolute',right:'3%',top:'45%',zIndex:'100000'}} onClick={() => {this.handleZoomButton(-1)}}>
           <ZoomOutIcon/>
-        </Button>
+        </Button> */}
+
+
         <div className='svgWrap' style={{
             position: 'relative',
             height: `${divScale}%`,
@@ -245,7 +286,8 @@ class InteractiveSvg extends Component {
             left: `${left}%`,
             top: `${top}%`
           }}>
-          <Map levels={this.state.levels}/>
+
+          <Map levels={this.state.levels.reverse()}/>
         </div>
       </div>
     </Hammer>);
@@ -259,4 +301,4 @@ const config = {
 };
 const sizeMeHOC = sizeMe(config);
 
-export default sizeMeHOC(InteractiveSvg);
+export default connect(mapStateToProps,mapDispatchToProps)(sizeMeHOC(InteractiveSvg));
