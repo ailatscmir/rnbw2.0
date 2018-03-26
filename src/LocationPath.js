@@ -2,7 +2,6 @@ import React, {Component,Fragment} from 'react'
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 import getBounds from 'svg-path-bounds';
-import parseSVG from 'parse-svg';
 
 const setSelectedCenter = ({x,y}) => {
   return {
@@ -60,7 +59,7 @@ class LocationPath extends Component {
     let location = this.props.data;
     let selected = (this.props.selectedLocation===location['@attributes']['id']);
     return (<Fragment>
-      <path key={location['@attributes']['id']} id={location['@attributes']['id']} d={location['@attributes']['d']} stroke={location['@attributes']['fill']} fill={(!selected)?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.7)'}/>
+      <path key={location['@attributes']['id']} id={location['@attributes']['id']} d={location['@attributes']['d']} stroke={location['@attributes']['fill']} fill={(!selected)?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.7)'}/>
     </Fragment>
     )
   }

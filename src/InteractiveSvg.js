@@ -3,9 +3,9 @@ import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 import Hammer from 'react-hammerjs';
 import sizeMe from 'react-sizeme';
-import {Button} from 'material-ui/';
-import ZoomInIcon from 'material-ui-icons/ZoomIn';
-import ZoomOutIcon from 'material-ui-icons/ZoomOut';
+// import {Button} from 'material-ui/';
+// import ZoomInIcon from 'material-ui-icons/ZoomIn';
+// import ZoomOutIcon from 'material-ui-icons/ZoomOut';
 
 import Map from './Map'
 
@@ -265,7 +265,9 @@ class InteractiveSvg extends Component {
     });
 
 
-    return (<Hammer options={hammerOptions} onWheel={this.handleWheel} onPan={this.handlePan} onPanStart={this.handlePanStart} onPanEnd={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handlePinchEnd} onPinchCancel={this.handlePinchEnd}>
+    return (<Hammer options={hammerOptions}
+              // onWheel={this.handleWheel} onPan={this.handlePan} onPanStart={this.handlePanStart} onPanEnd={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handlePinchEnd} onPinchCancel={this.handlePinchEnd}
+            >
       <div style={{
           height: '100vh',
           width: '100vw',

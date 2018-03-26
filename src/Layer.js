@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 import LocationPath from './LocationPath';
 import {connect} from "react-redux";
 import Legend from './Legend';
+import G from './G';
 // import Pathfinder from './Pathfinder';
 
 const mapStateToProps = state => {
@@ -15,7 +16,7 @@ class Layer extends Component {
     let data = this.props.data;
     let type = data['@attributes']['id'];
 
-    // if (type==='legend') console.log(this.props.data);
+    // if (type==='legend') console.log(Object.keys(this.props.data));
 
     return (<g className={type}>
       {
@@ -26,7 +27,7 @@ class Layer extends Component {
           : null
       }
       {
-        (type==='wall')?<path d={data.g.path['@attributes'].d} fill="rgba(255,255,255,0.4)" />:null
+        // (type==='wall')?<path d={data.g.path['@attributes'].d} fill="rgba(255,255,255,0.4)" />:null
       }
 
       {
@@ -35,15 +36,15 @@ class Layer extends Component {
             (way) => {return <path key={way['@attributes']['id']} d={way['@attributes']['d']} stroke="#fff" fill={way['@attributes']['fill']}/>})
           :null
       }
-      {
+      {/* {
         ((type==='base'))?
           data.path.map(
             (way) => {return <path id={way['@attributes']['id']} key={way['@attributes']['id']} d={way['@attributes']['d']} stroke="#fff" fill={way['@attributes']['fill']}/>})
           :null
-      }
+      } */}
       {
-        (type==='legend')
-          ? <Legend data={data}/>
+        ((type==='legend')||(type==='base')||(type==='wall'))
+          ? <G data={data}/>
           : null
       }
     </g>);

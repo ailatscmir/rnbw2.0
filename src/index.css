@@ -1,7 +1,5 @@
-html,body{
-  overflow: hidden;
-}
 html, body,#root {
+  overflow: hidden;
     height:100%;
     margin:0;
 }
@@ -10,10 +8,6 @@ html, body,#root {
   display:flex;
   flex-direction: row;
   align-content: stretch;
-}
-#canvas{
-  fill:none!important;
-  stroke:none;
 }
 .app {
   width: 100%;
@@ -43,7 +37,7 @@ html, body,#root {
 
 }
 
-#interactiveSvg  [class*=landmarks-]{
+#interactiveSvg  [class*=landmarks-] *{
   stroke: #fff;
   stroke-width: 2px;
 }
@@ -76,4 +70,16 @@ html, body,#root {
   left:5%;
   width: 400px;
   /* background: #ac22f1; */
+}
+
+svg #canvas{
+  fill:none!important;
+  stroke:none;
+}
+svg .base *{
+  fill:rgba(255,255,255,0.2)!important;
+}
+
+svg .wall * {
+  fill:white;
 }
