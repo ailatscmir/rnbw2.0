@@ -1,9 +1,7 @@
 import React, {Component} from 'react'
 import LocationPath from './LocationPath';
 import {connect} from "react-redux";
-import Legend from './Legend';
 import G from './G';
-// import Pathfinder from './Pathfinder';
 
 const mapStateToProps = state => {
   return {wayNum:state.wayNum}

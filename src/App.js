@@ -1,18 +1,18 @@
 import React, {Component} from 'react';
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
-import {
-  AppBar,
-  Toolbar,
-  Button
-} from 'material-ui/';
-import ListIcon from 'material-ui-icons/List';
+// import {
+//   AppBar,
+//   Toolbar,
+//   Button
+// } from 'material-ui/';
+// import SuggestedSearch  from './SuggestedSearch';
+// import ListIcon from 'material-ui-icons/List';
 import {withStyles} from 'material-ui/styles';
 
 import * as constants from './constants';
 import {setFetchFlag, saveItems} from './actions/fetch';
 import InteractiveSvg from './InteractiveSvg'
-import SuggestedSearch  from './SuggestedSearch';
 
 const setWayNumber = (wayNum) => {
   return {type:'SET_WAY_NUMBER',payload:wayNum}
@@ -81,7 +81,7 @@ class App extends Component {
   }
 
   render() {
-    const {classes} = this.props;
+    // const {classes} = this.props;
     return (<div className='App'>
         <div className='fullwindow'>
           {(this.props.map.length>0)?<InteractiveSvg levels={this.props.map}/>:null }

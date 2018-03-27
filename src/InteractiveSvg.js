@@ -57,7 +57,7 @@ class InteractiveSvg extends Component {
   }
 
   render() {
-    let {overlayPosition, position, scale} = this.state;
+    let { position, scale} = this.state;
     return (<div style={{
         height: '100vh',
         width: '100vw',
