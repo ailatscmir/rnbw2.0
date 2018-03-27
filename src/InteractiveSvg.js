@@ -240,56 +240,16 @@ class InteractiveSvg extends Component {
     this.setTransform({scale:scale*(1+factor*par)});
   }
   render() {
-    const {
-      pan,
-      pinch,
-      x,
-      y,
-      currentX,
-      currentY,
-      scale,
-      currentScale,
-      center
-    } = this.state;
-
-    let {top, left, divScale} = getTransform({
-      pan,
-      pinch,
-      x,
-      y,
-      currentX,
-      currentY,
-      scale,
-      currentScale,
-      center
-    });
-
+    const {ratio} = this.state;
 
     return (<Hammer options={hammerOptions}
               // onWheel={this.handleWheel} onPan={this.handlePan} onPanStart={this.handlePanStart} onPanEnd={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handlePinchEnd} onPinchCancel={this.handlePinchEnd}
             >
-      <div style={{
-          height: '100vh',
-          width: '100vw',
-          background:'#25324D'
-        }}>
-        {/* <Button variant="fab" color="primary" aria-label="add" style={{position:'absolute',right:'3%',top:'40%',zIndex:'100000'}} onClick={() => {this.handleZoomButton(1)}}>
-          <ZoomInIcon/>
-        </Button>
-        <Button variant="fab" color="primary" aria-label="add" style={{position:'absolute',right:'3%',top:'45%',zIndex:'100000'}} onClick={() => {this.handleZoomButton(-1)}}>
-          <ZoomOutIcon/>
-        </Button> */}
-
-
+      <div style={{height: '100vh',width: '100vw',background:'#25324D'}}>
         <div className='svgWrap' style={{
-            position: 'relative',
-            height: `${divScale}%`,
-            width: `${divScale}%`,
-            left: `${left}%`,
-            top: `${top}%`
+          transform: 'scale(1)'
           }}>
-
-          <Map levels={this.state.levels.reverse()}/>
+            <Map levels={this.state.levels.reverse()}/>
         </div>
       </div>
     </Hammer>);
