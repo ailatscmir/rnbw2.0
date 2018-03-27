@@ -18,7 +18,7 @@ class Level extends Component {
   }
   render() {
     // console.log(this.props.selectedCenter);
-    return (<div>
+    return (
       <svg viewBox={this.state.viewBox} className={this.props.className}>
         {this.state.level.map((layer) =>{
           return <Layer key={layer['@attributes'].id} index={this.props.index} data={layer}/>
@@ -29,7 +29,7 @@ class Level extends Component {
             </g>
         :null}
       </svg>
-    </div>
+    
     );
   }
 

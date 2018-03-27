@@ -93,15 +93,14 @@ class App extends Component {
         <div className='fullwindow'>
           {(this.props.map.length>0)?<InteractiveSvg levels={this.props.map}/>:null }
         </div>
-        <AppBar className={classes.customBar} position="absolute" color="default" style={{zIndex:'auto'}}>
+        {/* <AppBar className={classes.customBar} position="absolute" color="default" style={{zIndex:'auto'}}>
            <Toolbar>
              <Button className={classes.menuButton} color="inherit" aria-label="Menu">
                <ListIcon />
              </Button>
-             {/* <SuggestedSearch className={classes.search} data={this.props.locations}/> */}
              <KeyboardedInput fullWidth={true} value='' isDraggable={false} isFirstLetterUppercase={false} defaultKeyboard={'ru'} secondaryKeyboard={'us'} data={this.props.locations} />
            </Toolbar>
-         </AppBar>
+         </AppBar> */}
     </div>);
   }
 }
