@@ -1,29 +1,25 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {connect} from "react-redux";
-import {bindActionCreators} from 'redux';
-import Hammer from 'react-hammerjs';
 import sizeMe from 'react-sizeme';
-import Card, {CardActions, CardContent} from 'material-ui/Card';
-import {Paper,Typography, Button} from 'material-ui/';
+import {TextField,Paper,Button} from 'material-ui/';
 import AddIcon from 'material-ui-icons/Add';
 import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css'
 import Map from './Map';
 import OverlayElement from './OverlayElement';
 
+// import Hammer from 'react-hammerjs';
+
 class InteractiveSvg extends Component {
   constructor(props) {
     super(props);
     let levels = this.props.levels;
-
-    let [,, width, height] = levels[0]['@attributes'].viewBox.split(' ');
-    let planDimension = {
-      width,
-      height
-    };
     this.state = {
       levels: levels,
+      moveX:0,
+      moveY:0,
+      scaleTo:1,
       position: {
         x: 50,
         y: 50
@@ -35,42 +31,39 @@ class InteractiveSvg extends Component {
       }
     };
   }
-  handleChange = value => {
-    this.setState({scale:value});
+
+  componentWillReceiveProps = nextProps => {
+    console.log(nextProps);
   }
 
+  handleSliderChange = value => {
+    this.setState({scale:value});
+  }
+  handleChange = name => event => {
+   this.setState({
+     [name]: Number(event.target.value),
+   });
+  };
+
+  moveTo = () => {
+    let {moveX,moveY,scaleTo,position} = this.state;
+    position.x = moveX;
+    position.y = moveY;
+
+    this.setState({position:position,scale:scaleTo});
+  }
   getChildContext() {
     return {scale: this.state.scale};
   }
 
   render() {
-    let card = <Card raised style={{
-        width: 200
-      }}>
-      <CardContent>
-        <Typography color="textSecondary">
-          Word of the Day
-        </Typography>
-        <Typography variant="headline" component="h2">
-          be
-        </Typography>
-        <Typography color="textSecondary">
-          adjective
-        </Typography>
-        <Typography component="p">
-          well meaning and kindly.<br/> {'"a benevolent smile"'}
-        </Typography>
-      </CardContent>
-      <CardActions>
-        <Button size="small">Learn More</Button>
-      </CardActions>
-    </Card>;
     let {overlayPosition, position, scale} = this.state;
     return (<div style={{
         height: '100vh',
         width: '100vw',
         background: '#25324D'
       }}>
+      <div style={{position:'absolute',top:'50%',left:'50%',height:6,width:6,marginTop:-3,marginLeft:-3,background:'#fff'}}></div>
       <Paper elevation={20} style={{position:'fixed',bottom:0,left:0,margin:20,padding:20,height:200,width:400,zIndex:30000}} >
         <div className='slider'>
           <Slider
@@ -78,8 +71,40 @@ class InteractiveSvg extends Component {
              max={4}
              step={0.01}
              value={scale}
-             onChange={this.handleChange}
+             onChange={this.handleSliderChange}
          />
+         <TextField
+          id="x"
+          label="x"
+          value={this.state.moveX}
+          onChange={this.handleChange('moveX')}
+          type="number"
+          InputLabelProps={{
+            shrink: true,
+          }}
+          margin="normal"
+        />   <TextField
+            id="y"
+            label="y"
+            value={this.state.moveY}
+            onChange={this.handleChange('moveY')}
+            type="number"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            margin="normal"
+          />   <TextField
+              id="scale"
+              label="scale"
+              value={this.state.scaleTo}
+              onChange={this.handleChange('scaleTo')}
+              type="number"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              margin="normal"
+            />
+            <Button color={'primary'} onClick={this.moveTo}>Set</Button>
      </div>
       </Paper>
       <div className='interactive' style={{
@@ -87,7 +112,8 @@ class InteractiveSvg extends Component {
           position: 'relative',
           top: '50%',
           left: '50%',
-          transform: `translate(${0-position.x}%,${0-position.y}%) scale(${scale})`
+          transform: `translate(${0-position.x}%,${0-position.y}%) scale(${scale})`,
+          transformOrigin: `${position.x}% ${position.y}%`
         }}>
         <div className='overlayLayer' style={{position:'absolute',height:'100%',width:'100%',top:0,left:0}}>
           <OverlayElement x={30} y={50} unscalable>
@@ -100,9 +126,9 @@ class InteractiveSvg extends Component {
               <AddIcon />
             </Button>
           </OverlayElement>
-          <OverlayElement x={70} y={50} scale={scale} unscalable>
+          {/* <OverlayElement x={70} y={50} scale={scale} unscalable>
             {card}
-          </OverlayElement>
+          </OverlayElement> */}
         </div>
         <div className='mapImage' style={{zIndex: 0}}>
           <Map levels={this.state.levels.reverse()}/>

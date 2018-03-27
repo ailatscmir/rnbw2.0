@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import {connect} from "react-redux";
-import {bindActionCreators} from 'redux';
 import Layer from './Layer';
 
 const mapStateToProps = (state) => {
@@ -29,7 +28,7 @@ class Level extends Component {
             </g>
         :null}
       </svg>
-    
+
     );
   }
 
