@@ -1,25 +1,18 @@
 import React, {Component} from 'react';
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
-
 import {
   AppBar,
   Toolbar,
   Button
 } from 'material-ui/';
-
 import ListIcon from 'material-ui-icons/List';
-
 import {withStyles} from 'material-ui/styles';
 
 import * as constants from './constants';
 import {setFetchFlag, saveItems} from './actions/fetch';
-
 import InteractiveSvg from './InteractiveSvg'
-// import Sidebar from './Sidebar';
-
-import KeyboardedInput  from './KeyboardedInput';
-
+import SuggestedSearch  from './SuggestedSearch';
 
 const setWayNumber = (wayNum) => {
   return {type:'SET_WAY_NUMBER',payload:wayNum}
