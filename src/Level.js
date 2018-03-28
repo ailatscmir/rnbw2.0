@@ -16,14 +16,14 @@ class Level extends Component {
     };
   }
   render() {
-    console.log(this.props);
     return (
+      <div style={{position:'absolute',top:0,left:0,right:0,bottom:0}}>
       <svg viewBox={this.state.viewBox} className={this.props.className}>
         {this.state.level.map((layer) =>{
           return <Layer key={layer['@attributes'].id} index={this.props.index} data={layer}/>
         })}
       </svg>
-
+    </div>
     );
   }
 

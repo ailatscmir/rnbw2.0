@@ -22,17 +22,22 @@ html, body,#root {
     height:100%;
 }
 
+.interactive{
+  /* transition: all 1s ease-in-out; */
+}
+
 .scrollable {
      overflow-y:auto;
    	-webkit-overflow-scrolling:touch;
 }
 
 .showFloor {
-  display: block;
+  opacity: 1;
 }
 
 .hideFloor {
-  display: none!important;
+  opacity: 0;
+  /* display: none!important; */
 }
 
 #interactiveSvg  [class*=landmarks-] *{

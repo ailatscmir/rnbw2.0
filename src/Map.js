@@ -14,7 +14,9 @@ class Map extends Component {
     return (<Fragment>
       {this.props.levels.map((level,index) => {
         // console.log({currentLevel,title:level.title,cond:(currentLevel!==level.title)?'hideFloor':null});
-        return <Level key={index} index={index} data={level} className={(currentLevel!==level.title)?'hideFloor':null}/>
+        return <Level key={index} index={index} data={level}
+           className={(currentLevel!==level.title)?'hideFloor':'showFloor'}
+         />
       })}
     </Fragment>);
   }
