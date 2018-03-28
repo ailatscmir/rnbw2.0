@@ -20,12 +20,14 @@ export default class KeyboardButton extends PureComponent {
     this.handleClick = this.handleClick.bind(this);
   }
 
-  handleClick() {
+  handleClick(ev) {
     if (typeof (this.props.onClick) !== 'undefined') {
       this.props.onClick(this.props.value);
     }
   }
-
+  mouseDown(ev){
+    ev.preventDefault();
+  }
   render() {
     return (
       <button
@@ -33,6 +35,7 @@ export default class KeyboardButton extends PureComponent {
         tabIndex="-1"
         className={`${'keyboard-button '}${this.props.classes}`}
         onClick={this.props.isDisabled ? null : this.handleClick}
+        onMouseDown={this.mouseDown}
         autoFocus={this.props.autofocus}
         disabled={this.props.isDisabled}
       >

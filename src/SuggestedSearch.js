@@ -20,7 +20,7 @@ const fuseOptions = {
   shouldSort: true,
   includeMatches: true,
   includeScore: true,
-  threshold: 0.3,
+  threshold: 0.2,
   location: 0,
   distance: 100,
   maxPatternLength: 32,
@@ -38,6 +38,7 @@ const setSelectedLocation = (location) =>{
 }
 
 const getSuggestions = (inputValue, data) => {
+  // console.log(inputValue);
   let fuse = new Fuse(data,fuseOptions);
   return fuse.search(inputValue).slice(0,8);
 }
@@ -57,7 +58,7 @@ const styles = theme => ({
   paper: {
     position: 'absolute',
     zIndex: 1,
-    marginTop: 44,
+    marginTop: 16,
     left: 0,
     right: 0,
   }
@@ -66,16 +67,12 @@ const styles = theme => ({
 class SuggestedSearch extends Component {
   constructor(props) {
     super(props);
-    // this.handleFocus = this.handleFocus.bind(this);
-    // this.handleBlur = this.handleBlur.bind(this);
-    // this.handleChange = this.handleChange.bind(this);
-    // this.handleSelect = this.handleSelect.bind(this);
-    // this.hideKeyboard = this.hideKeyboard.bind(this);
-    // this.handleClear = this.handleClear.bind(this);
+    let locations = Object.keys(this.props.data).map(key => this.props.data[key]);
     this.state = {
       showKeyboard: false,
       input: null,
-      inputValue: ''
+      inputValue: '',
+      locations: locations
     };
   }
 
@@ -84,70 +81,45 @@ class SuggestedSearch extends Component {
   }
 
   handleBlur = event => {
-    setTimeout(() => {
-       if (!document.activeElement.classList.contains('keyboard-button') && !document.activeElement.classList.contains('keyboard') && !document.activeElement.classList.contains('keyboard-row')) {
-         this.setState({showKeyboard: false,input: null});
-       }
-     }, 0);
+    this.setState({showKeyboard: false,input: null});
   }
 
 
-  handleChange(ev) {
-    let value = ev.target.value;
-    this.setState({inputValue: value})
+  handleChange = (data) => {
+    if (typeof data === 'object'){
+      this.setState({inputValue: data.target.value})
+    } else {
+      this.setState({inputValue: data})
+    };
   }
-
-  // handleFocus(ev) {
-  //   this.setState({input: ev.target, inputValue: ev.target.value});
-  //   let temp_value = ev.target.value
-  //   ev.target.value = ''
-  //   ev.target.value = temp_value;
-  // }
-  //
-  // handleBlur(ev) {
-  //   const that = this;
-  //   setTimeout(() => {
-  //     if (!document.activeElement.classList.contains('keyboard-button') && !document.activeElement.classList.contains('keyboard') && !document.activeElement.classList.contains('keyboard-row')) {
-  //       that.setState({
-  //         ...that.state,
-  //         showKeyboard: false
-  //       });
-  //       this.setState({input: null});
-  //     }
-  //   }, 0);
-  // }
 
   handleSelect({title,id}){
     this.props.setSelectedLocation(id);
     this.setState({inputValue:title});
   }
 
-  hideKeyboard() {
-    this.setState({
-      ...this.state,
-      showKeyboard: false
-    });
-  }
-  handleClear(){
-    console.log('clear');
-    document.getElementById("kinput").focus();
+  handleClear = (ev) => {
+    this.inputNode.focus();
     this.setState({inputValue:''});
-    this.props.setSelectedLocation('');
+    this.props.setSelectedLocation(null);
   }
+
   render() {
     const {classes} = this.props;
     return (
-      <Fragment>
-        <FormControl className={classes.search} onFocus={this.handleFocus} onBlur={this.handleBlur}>
-          <Input placeholder='Поиск по названию или ключевым словам' ref={(input) => { this.textInput = input } } disableUnderline style={{borderBottom:'1px solid #ccc'}}
+      <div style={{width:'100%'}}>
+        <FormControl className={classes.search} onFocus={this.handleFocus} onBlur={this.handleBlur}  fullWidth>
+          <Input  inputProps={{ref: (node) => {this.inputNode = node}}}  placeholder='Поиск по названию или ключевым словам'  style={{borderBottom:'1px solid #ccc'}} value={this.state.inputValue}
             startAdornment={<InputAdornment position = "start" ><Search/></InputAdornment>}
-            // endAdornment={(this.state.inputValue!=='')?<InputAdornment position = "end" onClick={this.handleClear}><IconButton><Clear/></IconButton></InputAdornment>:null}
+
+            endAdornment={(this.state.inputValue!=='')?<InputAdornment position = "end" onClick={this.handleClear}><IconButton><Clear/></IconButton></InputAdornment>:null}
+            onChange={this.handleChange}
           />
         </FormControl>
 
         <Paper className={classes.paper} square>
-          <h1>124</h1>
-              {/* getSuggestions(this.state.inputValue, this.props.data).map((suggestion, index) => {
+          {
+            getSuggestions(this.state.inputValue, this.state.locations).map((suggestion, index) => {
               let hint;
               if (suggestion.matches[0].key!=='title'){
                 hint = ((suggestion.matches[0].key==='category.name')?'Категория: ':'Ключевое слово: ')+suggestion.matches[0].value
@@ -156,14 +128,14 @@ class SuggestedSearch extends Component {
                 <ListItemText primary={suggestion.item.title} secondary={hint}/>
               </ListItem>:null)
             })
-           */}
+          }
         </Paper>
         {
           (this.state.showKeyboard)
-            ? <Keyboard defaultKeyboard={this.props.defaultKeyboard} secondaryKeyboard={this.props.secondaryKeyboard} inputNode={this.state.input} dataset={this.props.dataset} isFirstLetterUppercase={this.props.isFirstLetterUppercase}/>
+            ? <Keyboard onClick={(value) => {this.handleChange(value)}} defaultKeyboard={this.props.defaultKeyboard} secondaryKeyboard={this.props.secondaryKeyboard} inputNode={this.state.input} dataset={this.props.dataset} isFirstLetterUppercase={this.props.isFirstLetterUppercase}/>
             : null
         }
-      </Fragment>
+      </div>
 
       //
       //

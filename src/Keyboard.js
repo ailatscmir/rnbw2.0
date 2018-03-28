@@ -58,8 +58,6 @@ export default class Keyboard extends PureComponent {
       keysSet = SymbolsLayout;
     } else if (this.state.currentLanguage === 'us') {
       keysSet = LatinLayout;
-    // } else if (this.state.currentLanguage === 'de') {
-    //   keysSet = GermanLayout;
     } else if (this.state.currentLanguage === 'ru') {
       keysSet = CyrillicLayout;
     } else if (this.state.currentLanguage) {
@@ -117,32 +115,9 @@ export default class Keyboard extends PureComponent {
   handleLetterButtonClick(key) {
     const { inputNode } = this.props;
     const { value } = inputNode;
-    //
-    // let selectionStart;
-    // let selectionEnd;
-    // // try {
-    // //   selectionStart = inputNode.selectionStart;
-    // //   selectionEnd = inputNode.selectionEnd;
-    // // } catch (e) {
-    //   selectionStart = value.length;
-    //   selectionEnd = value.length;
-    // // }
-    // console.log(selectionStart,selectionEnd);
     const nextValue = value + key;
     inputNode.value = nextValue;
-    if (this.props.onClick) {
-      this.props.onClick(nextValue);
-    }
-    setTimeout(() => {
-      inputNode.focus();
-      try {
-        // const offset = !isFinite(key) ? key.length : 1;
-        // inputNode.setSelectionRange(selectionStart + offset, selectionStart + offset);
-      } catch (e) {
-        console.error(e);
-      }
-    });
-    // this.setState({ uppercase: this.isUppercase() });
+    this.props.onClick(nextValue);
     inputNode.dispatchEvent(new CustomEvent('input'));
   }
 

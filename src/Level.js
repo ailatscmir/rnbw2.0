@@ -16,7 +16,7 @@ class Level extends Component {
     };
   }
   render() {
-    // console.log(this.props.selectedCenter);
+    console.log(this.props);
     return (
       <svg viewBox={this.state.viewBox} className={this.props.className}>
         {this.state.level.map((layer) =>{
