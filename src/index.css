@@ -9,6 +9,7 @@ html, body,#root {
   flex-direction: row;
   align-content: stretch;
 }
+
 .app {
   width: 100%;
   flex:1;
@@ -33,22 +34,10 @@ html, body,#root {
 .hideFloor {
   display: none!important;
 }
-.controlGroup{
-
-}
 
 #interactiveSvg  [class*=landmarks-] *{
   stroke: #fff;
   stroke-width: 2px;
-}
-
-.searchField{
-  padding: 4%;
-  margin: 5%;
-  border: none;
-  border: 3px solid #999;
-  width: 79%;
-  font-size: 26px;
 }
 
 .fullwindow{
@@ -59,17 +48,6 @@ html, body,#root {
   width: 100vw;
   z-index: 0;
   overflow: hidden;
-}
-
-.panel{
-  overflow-y: scroll;
-
-  position: absolute;
-  height: 70%;
-  top:10%;
-  left:5%;
-  width: 400px;
-  /* background: #ac22f1; */
 }
 
 svg #canvas{

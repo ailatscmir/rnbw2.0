@@ -1,18 +1,15 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-// import Draggable from 'react-draggable'; // The default
 
 import KeyboardButton from './KeyboardButton';
 
 import LatinLayout from './layouts/LatinLayout';
 import CyrillicLayout from './layouts/CyrillicLayout';
 import SymbolsLayout from './layouts/SymbolsLayout';
-import GermanLayout from './layouts/GermanLayout';
 
 import BackspaceIcon from './icons/BackspaceIcon';
 import LanguageIcon from './icons/LanguageIcon';
 import ShiftIcon from './icons/ShiftIcon';
-// import DraggableIcon from './icons/DraggableIcon';
 
 export default class Keyboard extends PureComponent {
   static propTypes = {
@@ -51,7 +48,7 @@ export default class Keyboard extends PureComponent {
     this.state = {
       currentLanguage: props.defaultKeyboard,
       showSymbols: false,
-      uppercase: this.isUppercase(),
+      // uppercase: this.isUppercase(),
     };
   }
 
@@ -61,8 +58,8 @@ export default class Keyboard extends PureComponent {
       keysSet = SymbolsLayout;
     } else if (this.state.currentLanguage === 'us') {
       keysSet = LatinLayout;
-    } else if (this.state.currentLanguage === 'de') {
-      keysSet = GermanLayout;
+    // } else if (this.state.currentLanguage === 'de') {
+    //   keysSet = GermanLayout;
     } else if (this.state.currentLanguage === 'ru') {
       keysSet = CyrillicLayout;
     } else if (this.state.currentLanguage) {

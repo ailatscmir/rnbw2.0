@@ -1,14 +1,14 @@
 
-export function setFetchFlag(flag, data) {
+export function setFetchFlag(data) {
   return {
-    type: 'FETCH_' + flag,
+    type: 'FETCH_DATA',
     payload: data
   }
 }
 
-export function saveItems(flag, data) {
+export function saveItems(data) {
   return {
-    type: 'SAVE_' + flag,
+    type: 'SAVE_DATA',
     payload: data
   }
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Component,Fragment} from 'react';
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 import Keyboard from './Keyboard';
@@ -47,36 +47,31 @@ const mapDispatchToProps = dispatch => {
     setSelectedLocation: bindActionCreators(setSelectedLocation, dispatch)
   }
 }
-
 const styles = theme => ({
-  container: {
-    flexGrow: 3,
-    position: 'relative'
+  root:{
+    flexGrow:1
+  },
+  search:{
+    flexGrow:1,
   },
   paper: {
     position: 'absolute',
     zIndex: 1,
-    marginTop: theme.spacing.unit + 12,
+    marginTop: 44,
     left: 0,
-    right: 0
-  },
-  inputRoot: {
-    flexWrap: 'wrap'
-  },
-  hiddenInput: {
-    display: 'none'
+    right: 0,
   }
 });
 
-class SuggestedSearch extends React.Component {
+class SuggestedSearch extends Component {
   constructor(props) {
     super(props);
-    this.handleFocus = this.handleFocus.bind(this);
-    this.handleBlur = this.handleBlur.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSelect = this.handleSelect.bind(this);
-    this.hideKeyboard = this.hideKeyboard.bind(this);
-    this.handleClear = this.handleClear.bind(this);
+    // this.handleFocus = this.handleFocus.bind(this);
+    // this.handleBlur = this.handleBlur.bind(this);
+    // this.handleChange = this.handleChange.bind(this);
+    // this.handleSelect = this.handleSelect.bind(this);
+    // this.hideKeyboard = this.hideKeyboard.bind(this);
+    // this.handleClear = this.handleClear.bind(this);
     this.state = {
       showKeyboard: false,
       input: null,
@@ -84,30 +79,43 @@ class SuggestedSearch extends React.Component {
     };
   }
 
+  handleFocus = event => {
+      this.setState({input:event.target,showKeyboard:true,});
+  }
+
+  handleBlur = event => {
+    setTimeout(() => {
+       if (!document.activeElement.classList.contains('keyboard-button') && !document.activeElement.classList.contains('keyboard') && !document.activeElement.classList.contains('keyboard-row')) {
+         this.setState({showKeyboard: false,input: null});
+       }
+     }, 0);
+  }
+
+
   handleChange(ev) {
     let value = ev.target.value;
     this.setState({inputValue: value})
   }
 
-  handleFocus(ev) {
-    this.setState({input: ev.target, inputValue: ev.target.value});
-    let temp_value = ev.target.value
-    ev.target.value = ''
-    ev.target.value = temp_value;
-  }
-
-  handleBlur(ev) {
-    const that = this;
-    setTimeout(() => {
-      if (!document.activeElement.classList.contains('keyboard-button') && !document.activeElement.classList.contains('keyboard') && !document.activeElement.classList.contains('keyboard-row')) {
-        that.setState({
-          ...that.state,
-          showKeyboard: false
-        });
-        this.setState({input: null});
-      }
-    }, 0);
-  }
+  // handleFocus(ev) {
+  //   this.setState({input: ev.target, inputValue: ev.target.value});
+  //   let temp_value = ev.target.value
+  //   ev.target.value = ''
+  //   ev.target.value = temp_value;
+  // }
+  //
+  // handleBlur(ev) {
+  //   const that = this;
+  //   setTimeout(() => {
+  //     if (!document.activeElement.classList.contains('keyboard-button') && !document.activeElement.classList.contains('keyboard') && !document.activeElement.classList.contains('keyboard-row')) {
+  //       that.setState({
+  //         ...that.state,
+  //         showKeyboard: false
+  //       });
+  //       this.setState({input: null});
+  //     }
+  //   }, 0);
+  // }
 
   handleSelect({title,id}){
     this.props.setSelectedLocation(id);
@@ -128,39 +136,40 @@ class SuggestedSearch extends React.Component {
   }
   render() {
     const {classes} = this.props;
-    return (<div style={{
-        flexGrow: 1
-      }}>
-      <FormControl className='container' onFocus={this.handleFocus} onBlur={this.handleBlur} onChange={this.handleChange} fullWidth>
-        <Input autoFocus id="kinput" value={this.state.inputValue} onChange={this.handleChange} placeholder='Поиск по названию или ключевым словам'
-          startAdornment={<InputAdornment position = "start" ><Search/></InputAdornment>}
-          endAdornment={(this.state.inputValue!=='')?<InputAdornment position = "end" onClick={this.handleClear}><IconButton><Clear/></IconButton></InputAdornment>:null}
-          // endAdorment={<InputAdornment position = "end" ><Clear/></InputAdornment>}
-        />
+    return (
+      <Fragment>
+        <FormControl className={classes.search} onFocus={this.handleFocus} onBlur={this.handleBlur}>
+          <Input placeholder='Поиск по названию или ключевым словам' ref={(input) => { this.textInput = input } } disableUnderline style={{borderBottom:'1px solid #ccc'}}
+            startAdornment={<InputAdornment position = "start" ><Search/></InputAdornment>}
+            // endAdornment={(this.state.inputValue!=='')?<InputAdornment position = "end" onClick={this.handleClear}><IconButton><Clear/></IconButton></InputAdornment>:null}
+          />
+        </FormControl>
 
-      </FormControl>
-
-      <Paper className={classes.paper}>
+        <Paper className={classes.paper} square>
+          <h1>124</h1>
+              {/* getSuggestions(this.state.inputValue, this.props.data).map((suggestion, index) => {
+              let hint;
+              if (suggestion.matches[0].key!=='title'){
+                hint = ((suggestion.matches[0].key==='category.name')?'Категория: ':'Ключевое слово: ')+suggestion.matches[0].value
+              } else hint=null;
+              return ((this.state.inputValue!==suggestion.item.title)?<ListItem button key={index} component="div" id={suggestion.item.name} onClick={() => this.handleSelect({title:suggestion.item.title,id:suggestion.item.name})}>
+                <ListItemText primary={suggestion.item.title} secondary={hint}/>
+              </ListItem>:null)
+            })
+           */}
+        </Paper>
         {
-          getSuggestions(this.state.inputValue, this.props.data).map((suggestion, index) => {
-            let hint;
-            if (suggestion.matches[0].key!=='title'){
-              hint = ((suggestion.matches[0].key==='category.name')?'Категория: ':'Ключевое слово: ')+suggestion.matches[0].value
-            } else hint=null;
-            return ((this.state.inputValue!==suggestion.item.title)?<ListItem button key={index} component="div" id={suggestion.item.name} onClick={() => this.handleSelect({title:suggestion.item.title,id:suggestion.item.name})}>
-              <ListItemText primary={suggestion.item.title} secondary={hint}/>
-            </ListItem>:null)
-          })
+          (this.state.showKeyboard)
+            ? <Keyboard defaultKeyboard={this.props.defaultKeyboard} secondaryKeyboard={this.props.secondaryKeyboard} inputNode={this.state.input} dataset={this.props.dataset} isFirstLetterUppercase={this.props.isFirstLetterUppercase}/>
+            : null
         }
-      </Paper>
+      </Fragment>
 
-      {
-        (this.state.input)
-          ? <Keyboard defaultKeyboard={this.props.defaultKeyboard} secondaryKeyboard={this.props.secondaryKeyboard} inputNode={this.state.input} dataset={this.props.dataset} isFirstLetterUppercase={this.props.isFirstLetterUppercase}/>
-          : null
-      }
+      //
+      //
 
-    </div>);
+
+    );
   }
 }
 
