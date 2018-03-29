@@ -1,7 +1,7 @@
 const initialState = {
-  fetchStatus:false,
+  dataStatus:false,
   data: null,
-  wayNum: 0,
+  wayNum: (window.location.hash.replace('#', '')!=='')?window.location.hash.replace('#', ''):0,
   currentFloor: 'floor1',
   selectedLocation: null,
   transform:{
@@ -11,8 +11,9 @@ const initialState = {
 
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
-    case 'FETCH_DATA': return {...state, fetchStatus: false};
-    case 'SAVE_DATA': return {...state, fetchStatus:true,data : action.payload};
+    // case 'FETCH_DATA': return {...state, dataStatus: false};
+    case 'SAVE_DATA': return {...state, dataStatus:true,data : action.payload};
+
     case 'SET_WAY_NUMBER': return {...state, wayNum: action.payload};
     case 'SET_LEVEL': return {...state, currentFloor: action.payload};
     case 'SET_SELECTED_LOCATION': return {...state, selectedLocation: action.payload};

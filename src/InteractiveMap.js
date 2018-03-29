@@ -46,7 +46,7 @@ const getRatio = (planDimension, componentDimension) =>{
   return {pAsp,cAsp,divisionX,divisionY};
 }
 
-class InteractiveSvg extends Component {
+class InteractiveMap extends Component {
   constructor(props) {
     super(props);
     let levels = this.props.levels;
@@ -204,4 +204,4 @@ const config = {
 };
 const sizeMeHOC = sizeMe(config);
 
-export default connect(mapStateToProps, mapDispatchToProps)(sizeMeHOC(InteractiveSvg));
+export default connect(mapStateToProps, mapDispatchToProps)(sizeMeHOC(InteractiveMap));

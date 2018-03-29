@@ -4,14 +4,15 @@ import {bindActionCreators} from 'redux';
 import {CircularProgress} from 'material-ui/Progress';
 import * as constants from './constants';
 import {setFetchFlag, saveItems} from './actions/fetch';
-import InteractiveSvg from './InteractiveSvg';
+import InteractiveMap from './InteractiveMap';
 import TopMenuBar from './TopMenuBar';
+
 const setWayNumber = (wayNum) => {
   return {type: 'SET_WAY_NUMBER', payload: wayNum}
 }
 
 const mapStateToProps = state => {
-  return {data: state.data, fetchStatus: state.fetchStatus}
+  return {data: state.data, dataStatus: state.dataStatus}
 };
 
 const mapDispatchToProps = dispatch => {
@@ -23,10 +24,12 @@ const mapDispatchToProps = dispatch => {
 };
 
 class App extends Component {
+
   fetchApi(apiUrl) {
     this.props.setFetchFlag('fetching');
     fetch(apiUrl).then((response) => {
       if (!response.ok) {
+        // console.log(response.statusText);
         throw Error(response.statusText);
       }
       return response;
@@ -37,16 +40,15 @@ class App extends Component {
 
   componentDidMount() {
     this.fetchApi(constants.API_MAP);
-    this.props.setWayNumber('way' + window.location.hash.replace('#', ''));
+    // this.props.setWayNumber('way' + window.location.hash.replace('#', ''));
   }
 
   render() {
-    // console.log(this.props.fetchStatus,this.props.data.map);
     return (<div className='App'>
-    {(this.props.fetchStatus)
+    {(this.props.dataStatus)
       ? <Fragment>
         <div className='fullwindow'>
-          <InteractiveSvg levels={this.props.data.map}/>
+          <InteractiveMap levels={this.props.data.map}/>
         </div>
         <TopMenuBar data = {this.props.data.locations} />
       </Fragment>
