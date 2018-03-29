@@ -2,8 +2,6 @@ import React, {Component,Fragment} from 'react';
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 import {CircularProgress} from 'material-ui/Progress';
-import {withStyles} from 'material-ui/styles';
-
 import * as constants from './constants';
 import {setFetchFlag, saveItems} from './actions/fetch';
 import InteractiveSvg from './InteractiveSvg';
@@ -25,12 +23,6 @@ const mapDispatchToProps = dispatch => {
   }
 };
 
-const styles = theme => ({
-  customBar: {
-
-  }
-});
-
 class App extends Component {
 
   fetchApi(apiUrl) {
@@ -51,7 +43,6 @@ class App extends Component {
   }
 
   render() {
-    const {classes} = this.props;
     // console.log(this.props.fetchStatus,this.props.data.map);
     return (<div className='App'>
     {(this.props.fetchStatus)
@@ -71,4 +62,4 @@ class App extends Component {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(App));
+export default connect(mapStateToProps, mapDispatchToProps)(App);

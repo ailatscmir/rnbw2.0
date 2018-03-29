@@ -2,8 +2,6 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {connect} from "react-redux";
 import sizeMe from 'react-sizeme';
-import {TextField, Paper, Button} from 'material-ui/';
-import AddIcon from 'material-ui-icons/Add';
 import Map from './Map';
 import OverlayElement from './OverlayElement';
 import {Motion, spring,presets} from 'react-motion';
@@ -34,14 +32,11 @@ const getRatio = (planDimension, componentDimension) =>{
   return {pAsp,cAsp,divisionX,divisionY};
 }
 
-const springPreset = {stiffness:120,damping:14};
-
 class InteractiveSvg extends Component {
   constructor(props) {
     super(props);
     let levels = this.props.levels;
-    let containerSize = this.props.size;
-    let [top, left, width, height] = levels[0]['@attributes'].viewBox.split(' ');
+    let [, , width, height] = levels[0]['@attributes'].viewBox.split(' ');
     let planDimension = {
       width,
       height
@@ -50,6 +45,8 @@ class InteractiveSvg extends Component {
     this.state = {
       ratio: getRatio(planDimension, this.props.size),
       animate:false,
+      pan:false,
+      pinch:false,
       motion:1,
       currentLevel: '',
       levels: levels,
@@ -57,6 +54,11 @@ class InteractiveSvg extends Component {
         x: 50,
         y: 50,
         scale: 1
+      },
+      currentTransform:{
+        x:50,
+        y:50,
+        scale:1
       },
       animateTransform: {
         x: 50,
@@ -89,8 +91,8 @@ class InteractiveSvg extends Component {
           x: animateTransform.x,
           y: animateTransform.y,
           scale: animateTransform.scale,
-
-        },animate:false
+        },
+        animate:false
       })
   }
 
@@ -102,18 +104,30 @@ class InteractiveSvg extends Component {
   getChildContext() {
     return {scale: this.state.transform.scale};
   }
-  handlePan = (ev) => {
-      console.log(ev.deltaX/this.props.size.width,ev.deltaY/this.props.size.height);
+
+  handlePanStart = (ev) => {
+    this.setState({pan:true});
   }
 
+  handlePan = (ev) => {
+    let {x,y,scale} = this.state.transform;
+    let {ratio} = this.state;
+    x = x-ev.deltaX/this.props.size.width/ratio.divisionX/scale*100;
+    y = y-ev.deltaY/this.props.size.height/ratio.divisionY/scale*100;
+    this.setState({currentTransform: {x:x,y:y,scale:scale}});
+  }
+  handlePanEnd = (ev) => {
+    let {x,y,scale} = this.state.currentTransform;
+    this.setState({pan:false,transform:{x:x,y:y,scale:scale}});
+  }
   render() {
-    let {transform,animateTransform} = this.state;
+    let {transform,currentTransform,animateTransform} = this.state;
     return (<div style={{
         height: '100vh',
         width: '100vw',
         background: '#25324D'
       }}>
-      <Hammer options={options} onPan={this.handlePan}>
+      <Hammer options={options} onPanStart={this.handlePanStart} onPan={this.handlePan} onPanEnd={this.handlePanEnd} onPanCancel={this.handlePanEnd}>
         <div style={{
             height: '100vh',
             width: '100vw',
@@ -121,18 +135,23 @@ class InteractiveSvg extends Component {
           }}>
         <Motion defaultStyle={{x: transform.x,y:transform.y ,scale:transform.scale}} style={{x:spring(animateTransform.x,{...presets.noWobble, precision: 0.01}),y:spring(animateTransform.y,{...presets.noWobble, precision: 0.1}),scale:spring(animateTransform.scale)}} onRest={this.endAnimation}>
           {(animated) => {
+            let x,y,scale;
+            if (this.state.animate){
+              ({x,y,scale} = animated);
+            } else {
+              if ((this.state.pan)||(this.state.pinch)){
+                ({x,y,scale} = currentTransform);
+              } else ({x,y,scale} = transform);
+            }
+            console.log({x,y,scale});
             return <div className='interactive' style={{
             height: `${this.state.ratio.divisionY*100}%`,
             zIndex: 2,
             position: 'relative',
             top: '50%',
             left: '50%',
-            transform: (this.state.animate)
-              ?`translate(${ 0 - animated.x}%,${ 0 - animated.y}%) scale(${animated.scale})`
-              :`translate(${ 0 - transform.x}%,${ 0 - transform.y}%) scale(${transform.scale})`,
-            transformOrigin: (this.state.animate)
-              ?`${animated.x}% ${animated.y}%`
-              :`${transform.x}% ${transform.y}%`
+            transform: `translate(${ 0 - x}%,${ 0 - y}%) scale(${scale})`,
+            transformOrigin:`${x}% ${y}%`
           }}>
             <div className='overlayLayer' style={{
                 position: 'absolute',
