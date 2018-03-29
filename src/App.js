@@ -6,7 +6,6 @@ import * as constants from './constants';
 import {setFetchFlag, saveItems} from './actions/fetch';
 import InteractiveSvg from './InteractiveSvg';
 import TopMenuBar from './TopMenuBar';
-
 const setWayNumber = (wayNum) => {
   return {type: 'SET_WAY_NUMBER', payload: wayNum}
 }
@@ -24,7 +23,6 @@ const mapDispatchToProps = dispatch => {
 };
 
 class App extends Component {
-
   fetchApi(apiUrl) {
     this.props.setFetchFlag('fetching');
     fetch(apiUrl).then((response) => {

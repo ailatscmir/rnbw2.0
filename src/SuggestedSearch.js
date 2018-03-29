@@ -106,13 +106,14 @@ class SuggestedSearch extends Component {
 
   render() {
     const {classes} = this.props;
+    console.log(this.props);
     return (
-      <div style={{width:'100%'}}>
+      <div style={this.props.style}>
         <FormControl className={classes.search} onFocus={this.handleFocus} onBlur={this.handleBlur}  fullWidth>
           <Input  inputProps={{ref: (node) => {this.inputNode = node}}}  placeholder='Поиск по названию или ключевым словам'  style={{borderBottom:'1px solid #ccc'}} value={this.state.inputValue}
-            startAdornment={<InputAdornment position = "start" ><Search/></InputAdornment>}
+            // startAdornment={<InputAdornment position = "start" ><Search/></InputAdornment>}
 
-            endAdornment={(this.state.inputValue!=='')?<InputAdornment position = "end" onClick={this.handleClear}><IconButton><Clear/></IconButton></InputAdornment>:null}
+            // endAdornment={(this.state.inputValue!=='')?<InputAdornment position = "end" onClick={this.handleClear}><IconButton><Clear/></IconButton></InputAdornment>:null}
             onChange={this.handleChange}
           />
         </FormControl>

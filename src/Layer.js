@@ -31,7 +31,7 @@ class Layer extends Component {
       {
         (type==='way')?
           data.path.filter(way => way['@attributes']['id']===this.props.wayNum).map(
-            (way) => {return <path key={way['@attributes']['id']} d={way['@attributes']['d']} stroke="#fff" fill={'#fff'}/>})
+            (way) => {return <path key={way['@attributes']['id']} d={way['@attributes']['d']} stroke="#fff" fill={'#ff0000'}/>})
           :null
       }
       {/* {

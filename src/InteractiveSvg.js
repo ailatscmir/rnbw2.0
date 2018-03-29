@@ -1,9 +1,8 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import {connect} from "react-redux";
+import {bindActionCreators} from 'redux';
 import sizeMe from 'react-sizeme';
 import Map from './Map';
-import OverlayElement from './OverlayElement';
 import {Motion, spring,presets} from 'react-motion';
 import Hammer from 'react-hammerjs';
 
@@ -20,9 +19,24 @@ const options = {
   }
 };
 
-const mapStateToProps = state => {
-  return {selectedLocation: state.selectedLocation, locations: state.data.locations}
+const setLevel = (level) => {
+  return {type:'SET_LEVEL',payload:level}
 }
+
+const setTransform = (transform) => {
+  return ({type: 'SET_TRANSFORM',payload:transform});
+}
+
+const mapStateToProps = state => {
+  return {selectedLocation: state.selectedLocation, locations: state.data.locations, currentLevel:state.currentFloor}
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    setTransform: bindActionCreators(setTransform, dispatch),
+    setLevel: bindActionCreators(setLevel, dispatch)
+  }
+};
 
 const getRatio = (planDimension, componentDimension) =>{
   let pAsp = planDimension.height/planDimension.width;
@@ -51,19 +65,19 @@ class InteractiveSvg extends Component {
       currentLevel: '',
       levels: levels,
       transform: {
-        x: 50,
-        y: 50,
-        scale: 1
+        x: 77,
+        y: 60,
+        scale: 2
       },
       currentTransform:{
         x:50,
         y:50,
-        scale:1
+        scale:2
       },
       animateTransform: {
-        x: 50,
-        y: 50,
-        scale: 1
+        x: 77,
+        y: 60,
+        scale: 2
       },
       range: {
         x: 0,
@@ -74,6 +88,7 @@ class InteractiveSvg extends Component {
 
   moveTo = location => {
     let l = this.props.locations[location];
+    this.props.setLevel(l.level);
     this.setState({
       animate:true,
       currentLevel: l.level,
@@ -101,14 +116,12 @@ class InteractiveSvg extends Component {
       this.moveTo(nextProps.selectedLocation);
     };
 
-  getChildContext() {
-    return {scale: this.state.transform.scale};
-  }
-
   handlePanStart = (ev) => {
     this.setState({pan:true});
   }
-
+  updateTransform(transform){
+    this.props.setTransform(transform);
+  }
   handlePan = (ev) => {
     let {x,y,scale} = this.state.transform;
     let {ratio} = this.state;
@@ -120,6 +133,29 @@ class InteractiveSvg extends Component {
     let {x,y,scale} = this.state.currentTransform;
     this.setState({pan:false,transform:{x:x,y:y,scale:scale}});
   }
+
+  handleWheel = (ev) => {
+    let {transform} = this.state;
+    transform.scale += ev.deltaY/1500;
+    this.setState({transform:transform});
+  }
+
+  handlePinch = (ev) => {
+    ev.preventDefault();
+    let {transform} = this.state;
+    transform.scale = transform.scale*((ev.scale-1)/3+1);
+    this.setState({currentTransform:transform});
+  }
+
+  handlePinchStart = (ev) => {
+    this.setState({pan:true});
+    console.log(ev.type);
+  }
+
+  handlePinchEnd = (ev) => {
+    let {x,y,scale} = this.state.currentTransform;
+    this.setState({pinch:false,transform:{x:x,y:y,scale:scale}});
+  }
   render() {
     let {transform,currentTransform,animateTransform} = this.state;
     return (<div style={{
@@ -127,11 +163,10 @@ class InteractiveSvg extends Component {
         width: '100vw',
         background: '#25324D'
       }}>
-      <Hammer options={options} onPanStart={this.handlePanStart} onPan={this.handlePan} onPanEnd={this.handlePanEnd} onPanCancel={this.handlePanEnd}>
+      <Hammer options={options} onWheel={this.handleWheel} onPanStart={this.handlePanStart} onPan={this.handlePan} onPanEnd={this.handlePanEnd} onPanCancel={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handleEnd} onPinchCancel={this.handleEnd}>
         <div style={{
             height: '100vh',
-            width: '100vw',
-            // background: '#25324D'
+            width: '100vw'
           }}>
         <Motion defaultStyle={{x: transform.x,y:transform.y ,scale:transform.scale}} style={{x:spring(animateTransform.x,{...presets.noWobble, precision: 0.01}),y:spring(animateTransform.y,{...presets.noWobble, precision: 0.1}),scale:spring(animateTransform.scale)}} onRest={this.endAnimation}>
           {(animated) => {
@@ -143,7 +178,6 @@ class InteractiveSvg extends Component {
                 ({x,y,scale} = currentTransform);
               } else ({x,y,scale} = transform);
             }
-            console.log({x,y,scale});
             return <div className='interactive' style={{
             height: `${this.state.ratio.divisionY*100}%`,
             zIndex: 2,
@@ -153,16 +187,8 @@ class InteractiveSvg extends Component {
             transform: `translate(${ 0 - x}%,${ 0 - y}%) scale(${scale})`,
             transformOrigin:`${x}% ${y}%`
           }}>
-            <div className='overlayLayer' style={{
-                position: 'absolute',
-                height: '100%',
-                width: '100%',
-                top: 0,
-                left: 0
-              }}>
-            </div>
             <div className='mapImage' style={{zIndex: 0}}>
-              <Map currentLevel={this.state.currentLevel} levels={this.state.levels}/>
+              <Map transform={{x:x,y:y,scale:scale}} currentLevel={this.props.currentLevel} levels={this.state.levels}/>
             </div>
           </div>}}
         </Motion>
@@ -172,14 +198,10 @@ class InteractiveSvg extends Component {
   }
 }
 
-InteractiveSvg.childContextTypes = {
-  scale: PropTypes.number.isRequired
-}
-
 const config = {
   monitorHeight: true,
   monitorWidth: true
 };
 const sizeMeHOC = sizeMe(config);
 
-export default connect(mapStateToProps, null)(sizeMeHOC(InteractiveSvg));
+export default connect(mapStateToProps, mapDispatchToProps)(sizeMeHOC(InteractiveSvg));
