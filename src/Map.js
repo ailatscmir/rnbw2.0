@@ -1,7 +1,7 @@
 import React, { Component,Fragment} from 'react';
 import Level from './Level';
 import {connect} from "react-redux";
-import {Paper,Button} from 'material-ui/';
+import {Button} from 'material-ui/';
 const overlays = {floor1:[
   {
     x:0,

@@ -5,7 +5,7 @@ const initialState = {
   currentFloor: 'floor1',
   currentLocation: null,
   transformation:{
-    x:50,y:50,scale:1
+    x:50,y:50,scale:2
   }
 };
 

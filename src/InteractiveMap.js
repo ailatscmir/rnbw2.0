@@ -1,22 +1,11 @@
 import React, {Component} from 'react';
 import {connect} from "react-redux";
-import {bindActionCreators} from 'redux';
 import sizeMe from 'react-sizeme';
 import Map from './Map';
-import {Motion, spring,presets} from 'react-motion';
 import TransformContainer from './TransformContainer';
 
 const mapStateToProps = state => {
   return {transformation:state.transformation}
-}
-
-
-const getRatio = (planDimension, componentDimension) =>{
-  let pAsp = planDimension.height/planDimension.width;
-  let cAsp = componentDimension.height/componentDimension.width;
-  let divisionX = 1;
-  let divisionY = pAsp / cAsp;
-  return {pAsp,cAsp,divisionX,divisionY};
 }
 
 class InteractiveMap extends Component {
@@ -27,7 +16,8 @@ class InteractiveMap extends Component {
     this.state = {
       currentLevel: '',
       mapSize: {height:height,width:width},
-      levels: levels
+      levels: levels,
+      start: false
     };
   }
 
@@ -37,6 +27,7 @@ class InteractiveMap extends Component {
         width: '100vw',
         background: '#25324D'
       }}>
+      <div style={{height:2,width:2,position:'relative',top:'50%',left:'50%',background:'#fff'}}></div>
       <TransformContainer transformation={this.props.transformation} componentSize={this.props.size} mapSize={this.state.mapSize}>
         <Map currentLevel={this.props.currentLevel} levels={this.state.levels}/>
       </TransformContainer>

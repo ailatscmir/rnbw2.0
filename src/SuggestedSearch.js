@@ -8,14 +8,14 @@ import Fuse from 'fuse.js';
 import {
   FormControl,
   Input,
-  InputAdornment,
+  // InputAdornment,
   ListItem,
   ListItemText,
   Paper,
-  IconButton
+  // IconButton
 } from 'material-ui/';
-import Search from 'material-ui-icons/Search';
-import Clear from 'material-ui-icons/Clear';
+// import Search from 'material-ui-icons/Search';
+// import Clear from 'material-ui-icons/Clear';
 const fuseOptions = {
   shouldSort: true,
   includeMatches: true,
@@ -106,7 +106,6 @@ class SuggestedSearch extends Component {
 
   render() {
     const {classes} = this.props;
-    console.log(this.props);
     return (
       <div style={this.props.style}>
         <FormControl className={classes.search} onFocus={this.handleFocus} onBlur={this.handleBlur}  fullWidth>

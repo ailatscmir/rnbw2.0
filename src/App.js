@@ -6,6 +6,7 @@ import * as constants from './constants';
 import {setFetchFlag, saveItems} from './actions/fetch';
 import InteractiveMap from './InteractiveMap';
 import TopMenuBar from './TopMenuBar';
+import Idle from 'react-idle';
 
 const setWayNumber = (wayNum) => {
   return {type: 'SET_WAY_NUMBER', payload: wayNum}
@@ -47,6 +48,7 @@ class App extends Component {
     return (<div className='App'>
     {(this.props.dataStatus)
       ? <Fragment>
+          <Idle timeout={5000} onChange={({ idle }) => console.log({ idle })} />
         <div className='fullwindow'>
           <InteractiveMap levels={this.props.data.map}/>
         </div>

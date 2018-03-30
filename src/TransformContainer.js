@@ -1,8 +1,8 @@
-import React, { Component,Fragment } from 'react';
+import React, { Component } from 'react';
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 import Hammer from 'react-hammerjs';
-
+import {Motion,spring,presets} from 'react-motion';
 const options = {
   touchAction: 'compute',
   recognizers: {
@@ -10,25 +10,30 @@ const options = {
       time: 600,
       threshold: 100
     },
+    pan:{
+      threshold: 10
+    },
     pinch: {
       enable: true
     }
   }
 };
-
+const clamp = ({value,min,max}) => {
+  return Math.min(Math.max(value,min),max);
+}
 const getRatio = ({mapSize, componentSize}) =>{
   let pAsp = mapSize.height/mapSize.width;
   let cAsp = componentSize.height/componentSize.width;
   let x,y,divisionX,divisionY;
 
-  if (pAsp<=0) {
-    console.log(pAsp,'wide');
+  if (pAsp<=1) {
     ([x,y] = [1,pAsp / cAsp]);
   } else {
     ([x,y] = [pAsp / cAsp,1]);
   };
 
-  ([divisionX,divisionY] = [componentSize.width/x,componentSize.height/y]);
+  ([divisionX,divisionY] = [componentSize.width*x,componentSize.height*y]);
+
   return {x,y,divisionX,divisionY};
 }
 
@@ -45,11 +50,10 @@ const mapDispatchToProps = dispatch => {
 class TransformContainer extends Component {
   constructor(props) {
     super(props);
-    console.log(props);
     let {transformation,componentSize,mapSize} = this.props;
     this.state = {
-      currentTransformation:transformation,
-      destination:transformation,
+      currentTransformation:{...transformation},
+      transformTo:{...transformation},
       componentSize: componentSize,
       mapSize: mapSize,
       ratio: getRatio({mapSize:mapSize,componentSize:componentSize}),
@@ -59,15 +63,30 @@ class TransformContainer extends Component {
     };
   }
 
+  componentDidMount() {
+    this.moveTo();
+  }
+
+  moveTo = () => {
+    this.setState({
+      showAnimation: true,
+      transformTo: {
+        x:35.27,
+        y:46.46,
+        scale:3
+      }
+    });
+  }
+
   handlePanStart = (ev) => {
     this.setState({pan:true});
   }
 
   handlePan = (ev) => {
-    let {ratio,transformation} = this.props;
+    let {transformation} = this.props;
     let currentTransformation = {
-      x : transformation.x-ev.deltaX/ratio.divisionX/transformation.scale*100,
-      y : transformation.y-ev.deltaY/ratio.divisionY/transformation.scale*100,
+      x : clamp({value: transformation.x-ev.deltaX/this.state.ratio.divisionX/transformation.scale*100,min: 100/transformation.scale/2,max: 100-100/transformation.scale/2}),
+      y : (transformation.scale>1/this.state.ratio.y)?clamp({value: transformation.y-ev.deltaY/this.state.ratio.divisionY/transformation.scale*100,min: 100/transformation.scale/2/this.state.ratio.y,max: 100-100/transformation.scale/2/this.state.ratio.y}):50,
       scale: transformation.scale
     };
     this.setState({currentTransformation: currentTransformation});
@@ -75,19 +94,18 @@ class TransformContainer extends Component {
 
   handlePanEnd = (ev) => {
     let {currentTransformation} = this.state;
-    this.props.setTransform(currentTransformation);
+    this.props.saveTransformation(currentTransformation);
     this.setState({pan:false});
   }
 
   handleWheel = (ev) => {
     let {transformation} = this.props
     let wheelScaledTransformation = {
-      x:transformation.x,
-      y:transformation.y,
-      scale:transformation.scale+ev.deltaY/1800
+      x:clamp({value: transformation.x, min: (0.5-(transformation.scale-1)/2)*100,max:(0.5+(transformation.scale-1)/2)*100}),
+      y:clamp({value: transformation.y, min: (0.5-(transformation.scale-1)/2)*100,max:(0.5+(transformation.scale-1)/2)*100}),
+      scale:clamp({value:transformation.scale+ev.deltaY/1800,min:1,max:4})
     };
-
-    this.props.setTransform(wheelScaledTransformation);
+    this.props.saveTransformation(wheelScaledTransformation);
   }
 
   handlePinch = (ev) => {
@@ -109,28 +127,35 @@ class TransformContainer extends Component {
   }
 
   endAnimation = () => {
-
+    this.setState({showAnimation:false});
+    this.props.saveTransformation(this.state.transformTo);
   }
 
   render() {
+    let transformTo = {...this.state.transformTo};
     let transformation = ((this.state.pan)||(this.state.pinch))?this.state.currentTransformation:this.props.transformation;
     return (
       <Hammer options={options} onWheel={this.handleWheel} onPanStart={this.handlePanStart} onPan={this.handlePan} onPanEnd={this.handlePanEnd} onPanCancel={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handleEnd} onPinchCancel={this.handleEnd}>
         <div style={{height: '100%',width: '100%'}}>
-        {/* <Motion defaultStyle={{x: transform.x,y:transform.y,scale:transform.scale}} style={{x:spring(animateTransform.x,{...presets.noWobble, precision: 0.01}),y:spring(animateTransform.y,{...presets.noWobble, precision: 0.1}),scale:spring(animateTransform.scale)}} onRest={this.endAnimation}> */}
-          <div className='interactive' style={{
-          height: `${this.state.ratio.y*100}%`,
-          width:`${this.state.ratio.x*100}%`,
-          zIndex: 2,
-          position: 'relative',
-          top: '50%',
-          left: '50%',
-          transform: `translate(${ 0 - transformation.x}%,${ 0 - transformation.y}%) scale(${transformation.scale})`,
-          transformOrigin:`${transformation.x}% ${transformation.y}%`
-          }}>
-            {this.props.children}
-          </div>
-          {/* </Motion> */}
+        <Motion
+          defaultStyle={{x: transformation.x,y:transformation.y,scale:transformation.scale}}
+          style={{x:spring(transformTo.x,{...presets.noWobble, precision: 0.01}),y:spring(transformTo.y,{...presets.noWobble, precision: 0.1}),scale:spring(transformTo.scale)}} onRest={this.endAnimation}>
+          {(animate) => {
+            transformation = (this.state.showAnimation)?animate:transformation;
+            return <div className='interactive' style={{
+              height: `${this.state.ratio.y*100}%`,
+              width:`${this.state.ratio.x*100}%`,
+              zIndex: 2,
+              position: 'relative',
+              top: '50%',
+              left: '50%',
+              transform: `translate(${ 0 - transformation.x}%,${ 0 - transformation.y}%) scale(${transformation.scale})`,
+              transformOrigin:`${transformation.x}% ${transformation.y}%`
+            }}>
+              {this.props.children}
+            </div>
+           }}
+          </Motion>
         </div>
       </Hammer>
     );

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {connect} from "react-redux";
 import Layer from './Layer';
 import OverlayElement from './OverlayElement';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 const mapStateToProps = (state) => {
   return {selectedCenter:state.selectedCenter,
     selectedLocation:state.selectedLocation}
