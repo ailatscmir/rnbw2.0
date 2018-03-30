@@ -4,18 +4,39 @@ import {connect} from "react-redux";
 import {Paper,Button} from 'material-ui/';
 const overlays = {floor1:[
   {
-    x:20,
-    y:50,
-    unscalable:true,
-    anchor: '50%,50%',
-    content: <Button variant="fab" color="primary" aria-label="add">Я</Button>
-  },
-  {
-    x:30,
-    y:40,
+    x:0,
+    y:0,
     unscalable:true,
     anchor: '-50%,-50%',
-    content: <Button variant="fab" color="primary" aria-label="add">Ё</Button>
+    content: <Button variant="fab" color="primary" aria-label="add">TL</Button>
+  },
+  {
+    x:100,
+    y:0,
+    unscalable:true,
+    anchor: '-50%,-50%',
+    content: <Button variant="fab" color="primary" aria-label="add">TR</Button>
+  },
+  {
+    x:0,
+    y:100,
+    unscalable:true,
+    anchor: '-50%,-50%',
+    content: <Button variant="fab" color="primary" aria-label="add">DL</Button>
+  },
+  {
+    x:100,
+    y:100,
+    unscalable:true,
+    anchor: '-50%,-50%',
+    content: <Button variant="fab" color="primary" aria-label="add">DR</Button>
+  },
+  {
+    x:50,
+    y:50,
+    unscalable:true,
+    anchor: '-50%,-50%',
+    content: <Button variant="fab" color="primary" aria-label="add">CC</Button>
   }
 ]};
 

@@ -22,8 +22,8 @@ class OverlayElement extends Component {
 
 }
 
-OverlayElement.contextTypes = {
-  scale: PropTypes.number.isRequired
-};
+// OverlayElement.contextTypes = {
+//   scale: PropTypes.number.isRequired
+// };
 
 export default OverlayElement;

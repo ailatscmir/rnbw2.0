@@ -17,9 +17,9 @@ class Level extends Component {
     };
   }
 
-  getChildContext() {
-    return {scale: this.props.transform.scale};
-  }
+  // getChildContext() {
+  //   return {scale: this.props.transform.scale};
+  // }
 
   render() {
     return (
@@ -52,9 +52,9 @@ class Level extends Component {
   }
 
 }
-
-Level.childContextTypes = {
-  scale: PropTypes.number.isRequired
-};
+//
+// Level.childContextTypes = {
+//   scale: PropTypes.number.isRequired
+// };
 
 export default connect(mapStateToProps,null)(Level);

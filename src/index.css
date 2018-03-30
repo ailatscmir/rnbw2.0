@@ -23,7 +23,6 @@ html, body,#root {
 }
 
 .interactive{
-  /* transition: all 1s ease-in-out; */
 }
 
 .scrollable {
@@ -37,7 +36,6 @@ html, body,#root {
 
 .hideFloor {
   opacity: 0;
-  /* display: none!important; */
 }
 
 #interactiveSvg  [class*=landmarks-] *{
