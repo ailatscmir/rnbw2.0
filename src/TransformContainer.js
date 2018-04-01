@@ -3,6 +3,7 @@ import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 import Hammer from 'react-hammerjs';
 import {Motion,spring,presets} from 'react-motion';
+
 const options = {
   touchAction: 'compute',
   recognizers: {
@@ -18,6 +19,7 @@ const options = {
     }
   }
 };
+
 const clamp = ({value,min,max}) => {
   return Math.min(Math.max(value,min),max);
 }
@@ -25,15 +27,12 @@ const getRatio = ({mapSize, componentSize}) =>{
   let pAsp = mapSize.height/mapSize.width;
   let cAsp = componentSize.height/componentSize.width;
   let x,y,divisionX,divisionY;
-
   if (pAsp<=1) {
     ([x,y] = [1,pAsp / cAsp]);
   } else {
     ([x,y] = [pAsp / cAsp,1]);
   };
-
   ([divisionX,divisionY] = [componentSize.width*x,componentSize.height*y]);
-
   return {x,y,divisionX,divisionY};
 }
 
@@ -63,6 +62,13 @@ class TransformContainer extends Component {
     };
   }
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (JSON.stringify(nextProps.componentSize)!==JSON.stringify(prevState.componentSize))
+    {
+        return {ratio: getRatio({mapSize:nextProps.mapSize,componentSize:nextProps.componentSize})};
+    } else return {};
+  }
+
   componentDidMount() {
     this.moveTo();
   }
@@ -71,8 +77,8 @@ class TransformContainer extends Component {
     this.setState({
       showAnimation: true,
       transformTo: {
-        x:35.27,
-        y:46.46,
+        x:77,
+        y:70,
         scale:3
       }
     });
@@ -125,6 +131,9 @@ class TransformContainer extends Component {
     // let {x,y,scale} = this.state.currentTransform;
     // this.setState({pinch:false,transform:{x:x,y:y,scale:scale}});
   }
+  handleTap = (ev) => {
+  console.log(ev.target);  
+  }
 
   endAnimation = () => {
     this.setState({showAnimation:false});
@@ -135,7 +144,7 @@ class TransformContainer extends Component {
     let transformTo = {...this.state.transformTo};
     let transformation = ((this.state.pan)||(this.state.pinch))?this.state.currentTransformation:this.props.transformation;
     return (
-      <Hammer options={options} onWheel={this.handleWheel} onPanStart={this.handlePanStart} onPan={this.handlePan} onPanEnd={this.handlePanEnd} onPanCancel={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handleEnd} onPinchCancel={this.handleEnd}>
+      <Hammer options={options} onWheel={this.handleWheel} onPanStart={this.handlePanStart} onPan={this.handlePan} onPanEnd={this.handlePanEnd} onPanCancel={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handleEnd} onPinchCancel={this.handleEnd} onTap={this.handleTap}>
         <div style={{height: '100%',width: '100%'}}>
         <Motion
           defaultStyle={{x: transformation.x,y:transformation.y,scale:transformation.scale}}
