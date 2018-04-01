@@ -12,6 +12,7 @@ class InteractiveMap extends Component {
   constructor(props) {
     super(props);
     let levels = this.props.levels;
+    console.log(Object.keys(levels));
     let [, , width, height] = levels[0]['@attributes'].viewBox.split(' ');
     this.state = {
       currentLevel: '',

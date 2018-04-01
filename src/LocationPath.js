@@ -59,7 +59,7 @@ class LocationPath extends Component {
     let location = this.props.data;
     let selected = (this.props.selectedLocation===location['@attributes']['id']);
     return (<Fragment>
-      <path key={location['@attributes']['id']} id={location['@attributes']['id']} d={location['@attributes']['d']} stroke={location['@attributes']['fill']} fill={(!selected)?'rgba(255,255,255,0.2)':'rgba(250,80,80,0.7)'}/>
+      <path key={location['@attributes']['id']} id={location['@attributes']['id']} data-location={location['@attributes']['id']} d={location['@attributes']['d']} stroke={location['@attributes']['fill']} fill={(!selected)?'rgba(255,255,255,0.2)':'rgba(250,80,80,0.7)'}/>
     </Fragment>
     )
   }

@@ -36,13 +36,19 @@ const getRatio = ({mapSize, componentSize}) =>{
   return {x,y,divisionX,divisionY};
 }
 
+const setCurrentLocation = location => {
+  console.log(location);
+  return ({type:'SET_CURRENTLOCATION', payload:location})
+}
+
 const saveTransformation = transformation => {
   return ({type:'SAVE_TRANSFORMATION', payload:transformation})
 }
 
 const mapDispatchToProps = dispatch => {
   return {
-    saveTransformation:bindActionCreators(saveTransformation, dispatch)
+    saveTransformation:bindActionCreators(saveTransformation, dispatch),
+    setCurrentLocation:bindActionCreators(setCurrentLocation,dispatch)
   };
 }
 
@@ -115,24 +121,26 @@ class TransformContainer extends Component {
   }
 
   handlePinch = (ev) => {
-    // ev.preventDefault();
-    // let {transform} = this.state;
-    // transform.scale = transform.scale*((ev.scale-1)/3+1);
-    // this.setState({currentTransform:transform});
+    ev.preventDefault();
+    let transformation = {...this.props.transformation};
+    transformation.scale = transformation.scale*((ev.scale-1)+1);
+    console.log(transformation);
+    this.setState({currentTransformation:transformation});
   }
 
   handlePinchStart = (ev) => {
     this.setState({pan:true});
-    // console.log(ev.type);
+    console.log(ev.type);
   }
 
   handlePinchEnd = (ev) => {
-    this.setState({pan:false});
-    // let {x,y,scale} = this.state.currentTransform;
-    // this.setState({pinch:false,transform:{x:x,y:y,scale:scale}});
+    this.setState({pinch:false});
+    console.log(ev.type);
+    this.props.saveTransformation({...this.state.currentTransformation});
   }
   handleTap = (ev) => {
-  console.log(ev.target);  
+    let currentLocation = ev.target.getAttribute('data-location');
+    if (currentLocation) this.props.setCurrentLocation(currentLocation);
   }
 
   endAnimation = () => {
@@ -144,7 +152,8 @@ class TransformContainer extends Component {
     let transformTo = {...this.state.transformTo};
     let transformation = ((this.state.pan)||(this.state.pinch))?this.state.currentTransformation:this.props.transformation;
     return (
-      <Hammer options={options} onWheel={this.handleWheel} onPanStart={this.handlePanStart} onPan={this.handlePan} onPanEnd={this.handlePanEnd} onPanCancel={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handleEnd} onPinchCancel={this.handleEnd} onTap={this.handleTap}>
+      <Hammer options={options} onWheel={this.handleWheel} onPanStart={this.handlePanStart} onPan={this.handlePan} onPanEnd={this.handlePanEnd}
+        onPanCancel={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handlePinchEnd} onPinchCancel={this.handlePinchEnd} onTap={this.handleTap}>
         <div style={{height: '100%',width: '100%'}}>
         <Motion
           defaultStyle={{x: transformation.x,y:transformation.y,scale:transformation.scale}}
