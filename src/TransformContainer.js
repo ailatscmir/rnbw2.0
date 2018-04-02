@@ -76,7 +76,7 @@ class TransformContainer extends Component {
   }
 
   componentDidMount() {
-    this.moveTo();
+    // this.moveTo();
   }
 
   moveTo = () => {

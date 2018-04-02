@@ -9,26 +9,24 @@ import InteractiveMap from './InteractiveMap';
 import TopMenuBar from './TopMenuBar';
 // import Idle from 'react-idle';
 
-const setWayNumber = (wayNum) => {
-  return {type: 'SET_WAY_NUMBER', payload: wayNum}
-}
-
 const mapStateToProps = state => {
   return {data: state.data, dataStatus: state.dataStatus}
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    setWayNumber: bindActionCreators(setWayNumber, dispatch),
-    setFetchFlag: bindActionCreators(setFetchFlag, dispatch),
     saveItems: bindActionCreators(saveItems, dispatch)
   }
 };
 
 class App extends Component {
-
+  constructor(props) {
+    super(props);
+    this.state = {
+      levels:null
+    };
+  }
   fetchApi(apiUrl) {
-    this.props.setFetchFlag('fetching');
     fetch(apiUrl).then((response) => {
       if (!response.ok) {
         // console.log(response.statusText);
@@ -44,19 +42,25 @@ class App extends Component {
     this.fetchApi(constants.API_MAP);
   }
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (nextProps.data) {return {levels:nextProps.data.levels}} else {return {}};
+  }
+
   render() {
     return (
       <Fragment>
         <CssBaseline />
       <div className='App'>
       {
-        (this.props.dataStatus)
+        (this.state.levels)
           ? <Fragment>
-              {/* <Idle timeout={5000} onChange={({idle}) => console.log({idle})}/> */}
               <div className='fullwindow'>
-                <InteractiveMap levels={this.props.data.map}/>
+                <InteractiveMap levels={this.state.levels}/>
               </div>
-              <TopMenuBar data={this.props.data.locations}/>
+              <TopMenuBar data={Object.keys(this.state.levels).map(level => this.state.levels[level].locations).reduce((acc,item) => {
+                acc = {...acc,...item};
+                return acc;
+              },[])}/>
             </Fragment>
           : <CircularProgress style={{
                 position: 'absolute',

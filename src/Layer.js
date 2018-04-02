@@ -13,8 +13,9 @@ class Layer extends Component {
   render() {
     let data = this.props.data;
     let type = data['@attributes']['id'];
-
-    // if (type==='legend') console.log(Object.keys(this.props.data));
+    if (type==='way') {
+      
+    };
 
     return (<g className={type}>
       {
@@ -24,22 +25,6 @@ class Layer extends Component {
             : <LocationPath key={data.path['@attributes']['id']} index={this.props.index} data={data.path} floor={this.props.floor}/>
           : null
       }
-      {
-        // (type==='wall')?<path d={data.g.path['@attributes'].d} fill="rgba(255,255,255,0.4)" />:null
-      }
-
-      {
-        (type==='way')?
-          data.path.filter(way => way['@attributes']['id']===this.props.wayNum).map(
-            (way) => {return <path key={way['@attributes']['id']} d={way['@attributes']['d']} stroke="#fff" fill={'#ff0000'}/>})
-          :null
-      }
-      {/* {
-        ((type==='base'))?
-          data.path.map(
-            (way) => {return <path id={way['@attributes']['id']} key={way['@attributes']['id']} d={way['@attributes']['d']} stroke="#fff" fill={way['@attributes']['fill']}/>})
-          :null
-      } */}
       {
         ((type==='legend')||(type==='base')||(type==='wall'))
           ? <G data={data}/>

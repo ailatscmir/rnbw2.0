@@ -18,11 +18,10 @@ class Map extends Component {
     };
   }
   render() {
-    let currentLevel = (this.props.currentLevel)?this.props.currentLevel:'floor1';
     return (<Fragment>
-      {this.props.levels.map((level,index) => {
-        return <Level key={index} index={index} data={level} transform={this.props.transform} overlay={overlays[level.title]}
-           className={(currentLevel!==level.title)?'hideFloor':'showFloor'}
+      {Object.keys(this.props.levels).map((levelId,index) => {
+        return <Level key={index} index={index} data={this.props.levels[levelId]} transform={this.props.transform} overlay={overlays[levelId]}
+           className={(this.props.currentLevel!==levelId)?'hideFloor':'showFloor'}
          />
       })}
     </Fragment>);
