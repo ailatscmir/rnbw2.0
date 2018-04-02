@@ -50,8 +50,7 @@ class Level extends Component {
       <svg viewBox={this.state.viewBox}>
         {
           this.state.level.map((layer) => {
-            console.log(this.state.level);
-            return <Layer key={layer['@attributes'].id} data={layer}/>
+            return <Layer key={layer['@attributes'].id} levelId={this.props.levelId} data={layer}/>
           })
         }
       </svg>

@@ -11,10 +11,11 @@ class Layer extends Component {
   componentDidMount() {}
 
   render() {
+    console.log(this.props);
     let data = this.props.data;
     let type = data['@attributes']['id'];
     if (type==='way') {
-      
+
     };
 
     return (<g className={type}>
