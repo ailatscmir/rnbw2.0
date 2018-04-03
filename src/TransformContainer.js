@@ -4,7 +4,10 @@ import {bindActionCreators} from 'redux';
 import Hammer from 'react-hammerjs';
 import {Motion,spring,presets} from 'react-motion';
 
-const options = {
+const MIN_SCALE = 1;
+const MAX_SCALE = 4;
+const scaleIncrement = 1;
+const HAMMER_OPTIONS = {
   touchAction: 'compute',
   recognizers: {
     tap: {
@@ -19,10 +22,44 @@ const options = {
     }
   }
 };
-
+const motionPreset = {
+  stiffness: 300,
+  damping: 35,
+  precision: 0.001
+}
 const clamp = ({value,min,max}) => {
   return Math.min(Math.max(value,min),max);
 }
+
+const clampTransformation = ({x,y,scale,ratio}) => {
+  scale = clamp({
+    value: scale,
+    min: MIN_SCALE,
+    max: MAX_SCALE
+  });
+
+  let range = {
+    x:50/scale/ratio.x,
+    y:50/scale/ratio.y
+  };
+
+  let clampedTranformation = {
+    x: (scale>1/ratio.x)?clamp({
+      value:  x,
+      min:  range.x,
+      max:  100-range.x
+    }):50,
+    y: (scale>1/ratio.y)?clamp({
+      value:  y,
+      min:  range.y,
+      max:  100-range.y
+    }):50,
+    scale:scale
+  }
+  return clampedTranformation;
+}
+
+
 const getRatio = ({mapSize, componentSize}) =>{
   let pAsp = mapSize.height/mapSize.width;
   let cAsp = componentSize.height/componentSize.width;
@@ -36,9 +73,8 @@ const getRatio = ({mapSize, componentSize}) =>{
   return {x,y,divisionX,divisionY};
 }
 
-const setCurrentLocation = location => {
-  console.log(location);
-  return ({type:'SET_CURRENTLOCATION', payload:location})
+const setTarget = locationId => {
+  return ({type:'SET_TARGET', payload:{type:'tenant',id:locationId}})
 }
 
 const saveTransformation = transformation => {
@@ -48,7 +84,7 @@ const saveTransformation = transformation => {
 const mapDispatchToProps = dispatch => {
   return {
     saveTransformation:bindActionCreators(saveTransformation, dispatch),
-    setCurrentLocation:bindActionCreators(setCurrentLocation,dispatch)
+    setTarget:bindActionCreators(setTarget,dispatch),
   };
 }
 
@@ -58,51 +94,64 @@ class TransformContainer extends Component {
     let {transformation,componentSize,mapSize} = this.props;
     this.state = {
       currentTransformation:{...transformation},
-      transformTo:{...transformation},
       componentSize: componentSize,
       mapSize: mapSize,
       ratio: getRatio({mapSize:mapSize,componentSize:componentSize}),
       pan:false,
       pinch:false,
-      showAnimation: false
+      showAnimation: false,
+      transformTo:{...transformation},
+      target:null
     };
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
+    let newState = {};
+
     if (JSON.stringify(nextProps.componentSize)!==JSON.stringify(prevState.componentSize))
-    {
-        return {ratio: getRatio({mapSize:nextProps.mapSize,componentSize:nextProps.componentSize})};
-    } else return {};
+      newState = {...newState,...{ratio: getRatio({mapSize:nextProps.mapSize,componentSize:nextProps.componentSize})}};
+
+    if ((nextProps.target)&&(nextProps.target.id!==prevState.target)) {
+      let target = nextProps.target;
+      let scale = (target.transform.scale)
+        ? (target.transform.scale==='in')
+          ? nextProps.transformation.scale+scaleIncrement
+          : (target.transform.scale==='out')
+            ? nextProps.transformation.scale-scaleIncrement : target.transform.scale
+        : nextProps.transformation.scale;
+      let range = {x:100/scale/2/prevState.ratio.x,y:100/scale/2/prevState.ratio.y}
+      target.transform = clampTransformation({
+        x: (target.transform.x)?target.transform.x:nextProps.transformation.x,
+        y: (target.transform.y)?target.transform.y:nextProps.transformation.y,
+        scale: (target.transform.scale)?scale:nextProps.transformation.scale,
+        ratio: prevState.ratio
+      });
+
+      console.log(target.transform);
+      newState = { ...newState, ...{
+        showAnimation:true,
+        target:target.id,
+        transformTo: {
+          ...prevState.transformTo ,
+          ...target.transform }}};
+    }
+    return newState;
   }
 
-  componentDidMount() {
-    // this.moveTo();
-  }
-
-  moveTo = () => {
-    this.setState({
-      showAnimation: true,
-      transformTo: {
-        x:77,
-        y:70,
-        scale:3
-      }
-    });
+  handleWheel = (ev) => {
+    let {transformation} = this.props
+    this.props.saveTransformation(clampTransformation({
+      x: transformation.x,
+      y: transformation.y,
+      scale: transformation.scale+ev.deltaY/1800,
+      ratio:this.state.ratio
+    }));
   }
 
   handlePanStart = (ev) => {
     this.setState({pan:true});
   }
 
-  handlePan = (ev) => {
-    let {transformation} = this.props;
-    let currentTransformation = {
-      x : clamp({value: transformation.x-ev.deltaX/this.state.ratio.divisionX/transformation.scale*100,min: 100/transformation.scale/2,max: 100-100/transformation.scale/2}),
-      y : (transformation.scale>1/this.state.ratio.y)?clamp({value: transformation.y-ev.deltaY/this.state.ratio.divisionY/transformation.scale*100,min: 100/transformation.scale/2/this.state.ratio.y,max: 100-100/transformation.scale/2/this.state.ratio.y}):50,
-      scale: transformation.scale
-    };
-    this.setState({currentTransformation: currentTransformation});
-  }
 
   handlePanEnd = (ev) => {
     let {currentTransformation} = this.state;
@@ -110,54 +159,73 @@ class TransformContainer extends Component {
     this.setState({pan:false});
   }
 
-  handleWheel = (ev) => {
-    let {transformation} = this.props
-    let wheelScaledTransformation = {
-      x:clamp({value: transformation.x, min: (0.5-(transformation.scale-1)/2)*100,max:(0.5+(transformation.scale-1)/2)*100}),
-      y:clamp({value: transformation.y, min: (0.5-(transformation.scale-1)/2)*100,max:(0.5+(transformation.scale-1)/2)*100}),
-      scale:clamp({value:transformation.scale+ev.deltaY/1800,min:1,max:4})
-    };
-    this.props.saveTransformation(wheelScaledTransformation);
+  handlePan = (ev) => {
+    let {transformation} = this.props;
+    let currentTransformation = clampTransformation({
+      x: transformation.x-ev.deltaX/this.state.ratio.divisionX/transformation.scale*100,
+      y: transformation.y-ev.deltaY/this.state.ratio.divisionY/transformation.scale*100,
+      scale: transformation.scale,
+      ratio: this.state.ratio
+    });
+    this.setState({currentTransformation: currentTransformation});
+  }
+
+  handlePinchStart = (ev) => {
+    console.log(ev.type);
+    this.setState({pan:true});
+  }
+
+  handlePinchEnd = (ev) => {
+    console.log(ev.type);
+    this.setState({pinch:false});
+    this.props.saveTransformation({...this.state.currentTransformation});
   }
 
   handlePinch = (ev) => {
     ev.preventDefault();
-    let transformation = {...this.props.transformation};
-    transformation.scale = transformation.scale*((ev.scale-1)+1);
-    console.log(transformation);
-    this.setState({currentTransformation:transformation});
+    let {transformation} = this.props;
+    let currentTransformation = clampTransformation({
+      x: transformation.x,
+      y: transformation.y,
+      scale: transformation.scale*((ev.scale-1)+1),
+      ratio: this.state.ratio
+    });
+    console.log(currentTransformation);
+    // transformation.scale = transformation.scale*((ev.scale-1)+1);
+    this.setState({currentTransformation:currentTransformation});
   }
 
-  handlePinchStart = (ev) => {
-    this.setState({pan:true});
-    console.log(ev.type);
-  }
-
-  handlePinchEnd = (ev) => {
-    this.setState({pinch:false});
-    console.log(ev.type);
-    this.props.saveTransformation({...this.state.currentTransformation});
-  }
   handleTap = (ev) => {
     let currentLocation = ev.target.getAttribute('data-location');
-    if (currentLocation) this.props.setCurrentLocation(currentLocation);
+    if (currentLocation) this.props.setTarget(currentLocation);
   }
 
   endAnimation = () => {
-    this.setState({showAnimation:false});
-    this.props.saveTransformation(this.state.transformTo);
+    if (this.state.showAnimation){
+      this.setState({showAnimation:false});
+      this.props.saveTransformation(this.state.transformTo);
+    }
   }
 
   render() {
-    let transformTo = {...this.state.transformTo};
     let transformation = ((this.state.pan)||(this.state.pinch))?this.state.currentTransformation:this.props.transformation;
+    let transformTo = (this.state.showAnimation)?{...this.state.transformTo}:this.props.transformation;
     return (
-      <Hammer options={options} onWheel={this.handleWheel} onPanStart={this.handlePanStart} onPan={this.handlePan} onPanEnd={this.handlePanEnd}
+      <Hammer options={HAMMER_OPTIONS} onWheel={this.handleWheel} onPanStart={this.handlePanStart} onPan={this.handlePan} onPanEnd={this.handlePanEnd}
         onPanCancel={this.handlePanEnd} onPinch={this.handlePinch} onPinchStart={this.handlePinchStart} onPinchEnd={this.handlePinchEnd} onPinchCancel={this.handlePinchEnd} onTap={this.handleTap}>
         <div style={{height: '100%',width: '100%'}}>
         <Motion
-          defaultStyle={{x: transformation.x,y:transformation.y,scale:transformation.scale}}
-          style={{x:spring(transformTo.x,{...presets.noWobble, precision: 0.01}),y:spring(transformTo.y,{...presets.noWobble, precision: 0.1}),scale:spring(transformTo.scale)}} onRest={this.endAnimation}>
+          defaultStyle={{
+            x: transformation.x,
+            y:transformation.y,
+            scale:transformation.scale
+          }}
+          style={{
+            x: spring(transformTo.x,motionPreset),
+            y: spring(transformTo.y,motionPreset),
+            scale:spring(transformTo.scale,motionPreset)
+          }}
+          onRest={this.endAnimation}>
           {(animate) => {
             transformation = (this.state.showAnimation)?animate:transformation;
             return <div className='interactive' style={{

@@ -4,7 +4,9 @@ class G extends Component {
 
   render() {
     let data = this.props.data;
-    return (<g>
+    return (<g style={{
+      pointerEvents: 'none'
+    }}>
       {
         (data.length)
           ? data.map((element) => {

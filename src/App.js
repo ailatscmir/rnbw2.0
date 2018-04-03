@@ -4,7 +4,7 @@ import {bindActionCreators} from 'redux';
 import CssBaseline from 'material-ui/CssBaseline';
 import {CircularProgress} from 'material-ui/Progress';
 import * as constants from './constants';
-import {setFetchFlag, saveItems} from './actions/fetch';
+import {saveItems} from './actions/fetch';
 import InteractiveMap from './InteractiveMap';
 import TopMenuBar from './TopMenuBar';
 // import Idle from 'react-idle';
@@ -43,10 +43,20 @@ class App extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    if (nextProps.data) {return {levels:nextProps.data.levels}} else {return {}};
+    if (nextProps.data) {
+      return {
+        levels:nextProps.data.levels,
+        locations:Object.keys(nextProps.data.levels).map(level => nextProps.data.levels[level].locations).reduce((acc,item) => {
+          acc = {...acc,...item};
+          return acc;
+        },[])
+      }
+    };
+    return {};
   }
 
   render() {
+
     return (
       <Fragment>
         <CssBaseline />
@@ -55,12 +65,9 @@ class App extends Component {
         (this.state.levels)
           ? <Fragment>
               <div className='fullwindow'>
-                <InteractiveMap levels={this.state.levels}/>
+                <InteractiveMap locations= {this.state.locations} levels={this.state.levels}/>
               </div>
-              <TopMenuBar data={Object.keys(this.state.levels).map(level => this.state.levels[level].locations).reduce((acc,item) => {
-                acc = {...acc,...item};
-                return acc;
-              },[])}/>
+              <TopMenuBar data={this.state.locations} levelIds={Object.keys(this.state.levels).sort().map(level => {return {id:level,name:this.state.levels[level].title}})}/>
             </Fragment>
           : <CircularProgress style={{
                 position: 'absolute',

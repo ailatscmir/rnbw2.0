@@ -4,11 +4,6 @@ import {connect} from "react-redux";
 import {Button} from 'material-ui/';
 const overlays = {
   floor1: [
-    {
-      x: 10,
-      y: 10,
-      content: <Button>123123</Button>
-    }
   ]
 };
 
@@ -29,8 +24,8 @@ class Map extends Component {
             levelId={levelId}
             overlay={overlays[levelId]} className={(
               this.props.currentLevel !== levelId)
-              ? 'hideFloor'
-              : 'showFloor'}/>
+              ? 'hideFloor ' + this.props.direction
+              : 'showFloor ' + this.props.direction}/>
         })
       }
     </Fragment>);
