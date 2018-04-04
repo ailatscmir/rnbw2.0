@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
-// import PropTypes from 'prop-types';
+import {connect} from "react-redux";
+
+const mapStateToProps = state => {
+  return {transformation:state.transformation}
+}
 class OverlayElement extends Component {
 
   render() {
+    console.log(this.props.children);
     let {x,y,anchor='0,0',unscalable} = this.props;
-    let scale = (unscalable)?`scale(${1/this.context.scale})`:'scale(1)';
+    let scale = (unscalable)?`scale(${1/this.props.transformation.scale})`:'scale(1)';
     return (
       <div className='overlayElement' style={{
         pointerEvents: 'auto',
@@ -22,8 +27,4 @@ class OverlayElement extends Component {
 
 }
 
-// OverlayElement.contextTypes = {
-//   scale: PropTypes.number.isRequired
-// };
-
-export default OverlayElement;
+export default connect(mapStateToProps,null)(OverlayElement);

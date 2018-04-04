@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {connect} from "react-redux";
 import Layer from './Layer';
 import OverlayElement from './OverlayElement';
-// import PropTypes from 'prop-types';
+
 const mapStateToProps = (state) => {
   return {selectedCenter: state.selectedCenter, selectedLocation: state.selectedLocation}
 }
@@ -17,11 +17,8 @@ class Level extends Component {
     };
   }
 
-  // getChildContext() {
-  //   return {scale: this.props.transform.scale};
-  // }
-
   render() {
+    console.log(this.props.overlays);
     return (<div style={{
         position: 'absolute',
         top: 0,
@@ -38,11 +35,13 @@ class Level extends Component {
           left: 0
         }}>
         {
-          (this.props.overlay)
-            ? this.props.overlay.map((overlay, index) => {
+          (this.props.overlays)
+            ? this.props.overlays.map((overlay, index) => {
+              console.log(overlay.content);
               return (<OverlayElement key={index} x={overlay.x} y={overlay.y} unscalable={overlay.unscalable} anchor={overlay.anchor}>
                 {overlay.content}
               </OverlayElement>);
+              // return <p>overlaytest</p>
             })
             : null
         }
@@ -58,9 +57,5 @@ class Level extends Component {
   }
 
 }
-//
-// Level.childContextTypes = {
-//   scale: PropTypes.number.isRequired
-// };
 
 export default connect(mapStateToProps, null)(Level);

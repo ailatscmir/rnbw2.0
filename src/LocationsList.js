@@ -1,6 +1,17 @@
 import React, {Component,Fragment} from 'react'
-// import {connect} from "react-redux";
+import {connect} from "react-redux";
+import {bindActionCreators} from 'redux';
 import LocationsCategory from './LocationsCategory';
+
+const setTarget = locationId => {
+  return ({type:'SET_TARGETMENU', payload:{target:{type:'tenant',id:locationId},listMode:false}})
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    setTarget: bindActionCreators(setTarget, dispatch)
+  }
+}
 
 const getCategories = (locations) =>{
   let categories = {};
@@ -49,6 +60,9 @@ class LocationsList extends Component {
       categories: orderedCategories,
     };
   }
+  setTarget(location){
+      this.props.setTarget(location)
+  }
 
   render() {
   //   const { classes } = this.props;
@@ -64,13 +78,13 @@ class LocationsList extends Component {
               return <Fragment>
                 <li>{categories[key].subcat[subkey].name}</li>
                 <ul>
-                  {Object.keys(locations).map(id => locations[id]).filter(location => (subkey===(location.category.term_order+'.'+location.category.slug))).map(location => <li>{location.title}</li>)}
+                  {Object.keys(locations).map(id => locations[id]).filter(location => (subkey===(location.category.term_order+'.'+location.category.slug))).map(location => <li onClick={() => this.setTarget(location.name)}>{location.title}</li>)}
                 </ul>
               </Fragment>
             })}</ul>
             : null}
             <ul>
-              {Object.keys(locations).map(id => locations[id]).filter(location => (key===(location.category.term_order+'.'+location.category.slug))).map(location => <li>{location.title}</li>)}
+              {Object.keys(locations).map(id => locations[id]).filter(location => (key===(location.category.term_order+'.'+location.category.slug))).map(location => <li onClick={() => this.setTarget(location.name)}>{location.title}</li>)}
             </ul>
           </li>
         })}
@@ -88,4 +102,4 @@ class LocationsList extends Component {
   }
 }
 
-export default LocationsList;
+export default connect(null,mapDispatchToProps)(LocationsList);

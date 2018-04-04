@@ -2,11 +2,11 @@ import React, {Component, Fragment} from 'react';
 import Level from './Level';
 import {connect} from "react-redux";
 import {Button} from 'material-ui/';
-const overlays = {
-  floor1: [
-  ]
-};
+import {Place} from 'material-ui-icons/';
 
+const mapStateToProps = state => {
+  return {overlays:state.overlays}
+}
 class Map extends Component {
   constructor(props) {
     super(props);
@@ -22,7 +22,7 @@ class Map extends Component {
             data={this.props.levels[levelId]}
             transform={this.props.transform}
             levelId={levelId}
-            overlay={overlays[levelId]} className={(
+            overlays={this.props.overlays.filter(overlay => overlay.levelId===levelId)} className={(
               this.props.currentLevel !== levelId)
               ? 'hideFloor ' + this.props.direction
               : 'showFloor ' + this.props.direction}/>
@@ -33,4 +33,4 @@ class Map extends Component {
 
 }
 
-export default connect(null, null)(Map);
+export default connect(mapStateToProps, null)(Map);

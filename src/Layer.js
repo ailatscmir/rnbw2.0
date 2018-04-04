@@ -5,9 +5,9 @@ import {bindActionCreators} from 'redux';
 
 import getBounds from 'svg-path-bounds';
 import G from './G';
-
-const setWayInfo = ({wayId,levelId,position}) => {
-  return { type: 'SET_WAYINFO', payload: {id:wayId,level:levelId,position}}
+import HereIcon from './HereIcon';
+const setWayInfo = (data) => {
+  return { type: 'SET_WAYINFO', payload: data}
 }
 
 const mapDispatchToProps = dispatch => {
@@ -32,7 +32,7 @@ class Layer extends Component {
         let [left,, right, bottom] = getBounds(wayIcon['@attributes'].d);
         let {x,y} = {x:left+(right-left)/2,y:bottom};
         let levelId = this.props.levelId;
-        this.props.setWayInfo({wayId:wayId,levelId:levelId,position:{x,y}})
+        this.props.setWayInfo([{id:'wayPin',anchor:'-50%,-90%',levelId:levelId,x:x/35,y:y/14,content:<HereIcon />}]);
       }
     };
   }

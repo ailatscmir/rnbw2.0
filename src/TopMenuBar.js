@@ -15,16 +15,24 @@ import {List,Layers} from 'material-ui-icons/';
 // import {LooksOne,LooksTwo} from 'material-ui-icons/';
 
 const mapStateToProps = state => {
-  return {currentLevel:state.currentFloor}
+  return {
+    currentLevel:state.currentFloor,
+    listMode:state.listMode
+  }
 }
 
 const setTarget = levelId => {
   return ({type:'SET_TARGET', payload:{type:'switchLevel',level:levelId}})
 }
 
+const listToggle = (mode) => {
+  return ({type:'CHANGLE_LISTMODE', payload:mode})
+}
+
 const mapDispatchToProps = dispatch => {
   return {
-    setTarget: bindActionCreators(setTarget, dispatch)
+    setTarget: bindActionCreators(setTarget, dispatch),
+    listToggle: bindActionCreators(listToggle, dispatch)
   }
 }
 
@@ -50,13 +58,16 @@ class TopMenuBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showList:true
+      showList:false
     };
   }
+
   toggleList = () => {
-    let {showList} = this.state;
-    this.setState({showList:!showList})
+    let {listMode} = this.props;
+    console.log(listMode);
+    this.props.listToggle(!listMode)
   }
+
   render() {
     let {classes}  = this.props;
     return (
@@ -71,23 +82,23 @@ class TopMenuBar extends Component {
 
             <Button color="inherit" aria-label="List" classes={{root:classes.listButton,label:classes.listButtonLabel}} onClick={this.toggleList}>
               {
-                (this.state.showList)?<Fragment><Layers className={classes.listIcon}/>Карта</Fragment>
+                (this.props.listMode)?<Fragment><Layers className={classes.listIcon}/>Карта</Fragment>
                 :<Fragment><List className={classes.listIcon}/>Список</Fragment>
               }
             </Button>
           <div style={{flexGrow:1}}>
-            {(this.state.showList)?null:<SuggestedSearch  isDraggable={false} isFirstLetterUppercase={false} defaultKeyboard={'ru'} secondaryKeyboard={'us'} data={this.props.data}/>}
+            {(this.props.listMode)?null:<SuggestedSearch  isDraggable={false} isFirstLetterUppercase={false} defaultKeyboard={'ru'} secondaryKeyboard={'us'} data={this.props.data}/>}
           </div>
           <div>
             {
-              (!this.state.showList)?
+              (!this.props.listMode)?
               this.props.levelIds.map( levelId =>
                 <Button style={{marginLeft:12}} key={levelId.id} color='primary' variant='raised' aria-haspopup="true" onClick={() => {this.props.setTarget(levelId.id)}}>
                   {levelId.name}
                 </Button> ):null
             }
           </div>
-          <Paper className='scrollable' square style={{position:'absolute',height:'80vh',top:64,width:'100%',marginLeft:-24,padding:20,overflowY:'scroll',display:(this.state.showList)?'block':'none'}}>
+          <Paper className='scrollable' square style={{position:'absolute',height:'80vh',top:64,width:'100%',marginLeft:-24,padding:20,overflowY:'scroll',display:(this.props.listMode)?'block':'none'}}>
             <LocationsList locations={this.props.data} />
           </Paper>
 

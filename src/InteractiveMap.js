@@ -3,7 +3,7 @@ import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 import { withStyles } from 'material-ui/styles';
 import {Button,Paper} from 'material-ui/';
-import {ZoomIn,ZoomOut} from 'material-ui-icons/';
+import {ZoomIn,ZoomOut,Place} from 'material-ui-icons/';
 import sizeMe from 'react-sizeme';
 import Map from './Map';
 import TransformContainer from './TransformContainer';
@@ -148,8 +148,9 @@ class InteractiveMap extends Component {
         background: '#25324D'
       }}>
       <Paper className={classes.sideButtonsArea}>
-        <Button classes={{root:classes.zoomButtons}} variant="fab"  aria-label="zoom-in" onClick={() => {this.props.setTarget({param:'in',from:this.props.transformation.scale})}}><ZoomIn className={classes.icon}/></Button>
+        <Button className={classes.zoomButtons} variant="fab"  aria-label="zoom-in" onClick={() => {this.props.setTarget({param:'in',from:this.props.transformation.scale})}}><ZoomIn className={classes.icon}/></Button>
         <Button className={classes.zoomButtons} variant="fab" aria-label="zoom-out" onClick={() => {this.props.setTarget({param:'out',from:this.props.transformation.scale})}}><ZoomOut className={classes.icon}/></Button>
+        <Button className={classes.zoomButtons} variant="fab" color='secondary'><Place className={classes.icon}/></Button>
       </Paper>
       <TransformContainer target={this.state.target} transformation={this.props.transformation} componentSize={this.props.size} mapSize={this.state.mapSize}>
         <Map currentLevel={(this.state.level)
