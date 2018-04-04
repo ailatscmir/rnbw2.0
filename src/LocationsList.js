@@ -2,7 +2,7 @@ import React, {Component,Fragment} from 'react'
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 import LocationsCategory from './LocationsCategory';
-
+import Typography from 'material-ui/Typography';
 const setTarget = locationId => {
   return ({type:'SET_TARGETMENU', payload:{target:{type:'tenant',id:locationId},listMode:false}})
 }
@@ -69,22 +69,35 @@ class LocationsList extends Component {
     let categories = this.state.categories;
     let locations = this.props.locations;
     return (
-      <ul style={{columns:4}}>
+      <ul style={{columns:4,listStyle:'none'}}>
         {Object.keys(categories).map((key) => {
           return <li>
+            <Typography variant="title" gutterBottom>
             {categories[key].name}
+            </Typography>
             {(categories[key].hasOwnProperty('subcat'))
-            ? <ul>{Object.keys(categories[key].subcat).map((subkey) => {
+            ? <ul style={{listStyle:'none'}}>{Object.keys(categories[key].subcat).map((subkey) => {
               return <Fragment>
+                <Typography variant="subheading" gutterBottom>
                 <li>{categories[key].subcat[subkey].name}</li>
+                </Typography>
                 <ul>
-                  {Object.keys(locations).map(id => locations[id]).filter(location => (subkey===(location.category.term_order+'.'+location.category.slug))).map(location => <li onClick={() => this.setTarget(location.name)}>{location.title}</li>)}
+                  {Object.keys(locations).map(id => locations[id]).filter(location => (subkey===(location.category.term_order+'.'+location.category.slug))).map(location =>
+                    <Typography variant="button" gutterBottom>
+                    <li style={{listStyle:'none'}} onClick={() => this.setTarget(location.name)}>{location.title}</li>
+                  </Typography>
+                  )}
                 </ul>
               </Fragment>
             })}</ul>
             : null}
             <ul>
-              {Object.keys(locations).map(id => locations[id]).filter(location => (key===(location.category.term_order+'.'+location.category.slug))).map(location => <li onClick={() => this.setTarget(location.name)}>{location.title}</li>)}
+              {Object.keys(locations).map(id => locations[id]).filter(location => (key===(location.category.term_order+'.'+location.category.slug))).map(location =>
+                <Typography variant="button" gutterBottom>
+                <li style={{listStyle:'none'}} onClick={() => this.setTarget(location.name)}>{location.title}</li>
+              </Typography>
+              )}
+
             </ul>
           </li>
         })}

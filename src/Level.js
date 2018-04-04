@@ -2,23 +2,37 @@ import React, {Component} from 'react';
 import {connect} from "react-redux";
 import Layer from './Layer';
 import OverlayElement from './OverlayElement';
-
+import {Typography,Paper} from 'material-ui/';
 const mapStateToProps = (state) => {
-  return {selectedCenter: state.selectedCenter, selectedLocation: state.selectedLocation}
+  return {
+    target:state.target,
+    dataStore:state.data
+  }
 }
 
 class Level extends Component {
   constructor(props) {
     super(props);
     let svg = this.props.data.svg;
+    let locations = Object.keys(this.props.dataStore.levels).map(level => this.props.dataStore.levels[level].locations).reduce((acc,item) => {
+      acc = {...acc,...item};
+      return acc;
+    },[]);
     this.state = {
       level: svg.g.g,
-      viewBox: svg['@attributes'].viewBox
+      viewBox: svg['@attributes'].viewBox,
+      locations:locations
     };
   }
 
   render() {
-    console.log(this.props.overlays);
+    let targetOverlay = null;
+    if (this.props.target) {
+
+      let target = this.state.locations[this.props.target.id];
+      targetOverlay = (target&&(target.level===this.props.levelId))?{title:target.title,x:target.position.x*100,y:target.position.y*100}:null;
+    }
+    console.log(targetOverlay);
     return (<div style={{
         position: 'absolute',
         top: 0,
@@ -34,6 +48,13 @@ class Level extends Component {
           top: 0,
           left: 0
         }}>
+        {(targetOverlay)?
+          <OverlayElement x={targetOverlay.x} y={targetOverlay.y} unscalable={true}>
+            <Paper style={{padding:20}}>
+              <Typography variant='headline'>{targetOverlay.title}</Typography>
+            </Paper>
+          </OverlayElement>
+          :null}
         {
           (this.props.overlays)
             ? this.props.overlays.map((overlay, index) => {
